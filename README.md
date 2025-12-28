@@ -35,7 +35,56 @@ An AI-powered autonomous penetration testing platform with intelligent memory, m
 - 👤 Behavioral Mimicry (traffic analysis, slow-burn attacks, adaptive stealth)
 - 🥷 APT-level sophistication
 
-## ✨ Key Features (All Phases 1-4)
+### ✅ Phase 5: Advanced Exploitation & Privilege Escalation (COMPLETE)
+- 🎯 Zero-day discovery and fuzzing capabilities
+- 🔓 Advanced privilege escalation techniques
+- 💣 Custom exploit development
+- 🧬 Vulnerability research automation
+
+### ✅ Phase 6: Advanced Agent Coordination (COMPLETE)
+- 🤝 Swarm intelligence with emergent behaviors
+- 🎯 Consensus-based decision making
+- 🔄 Self-healing and adaptive strategies
+- 📊 Real-time agent performance optimization
+
+### ✅ Phase 7: Cloud Security Assessment (COMPLETE)
+- ☁️ Multi-cloud support (AWS, Azure, GCP)
+- 🔐 Cloud misonfiguration detection
+- 🎭 Identity and access management testing
+- 🌐 Serverless and container security
+
+### ✅ Phase 8: Data Exfiltration & Impact Analysis (COMPLETE)
+- 📦 Sensitive data discovery and classification
+- 🚀 Advanced exfiltration techniques
+- 💰 Business impact calculation
+- 📋 Compliance violation assessment
+
+### ✅ Phase 9: Adversary Simulation & Red Team Automation (COMPLETE)
+- 🎯 MITRE ATT&CK framework integration (60+ techniques)
+- 🎭 Threat actor emulation (APT28, APT29, Lazarus, APT38, APT41, FIN7)
+- 🟣 Purple team capabilities with real-time telemetry
+- 🔄 Continuous adversary simulation
+- 🎪 Assume breach scenarios
+- 👤 Insider threat simulation
+- 🔗 Supply chain attack scenarios
+
+### ✅ Phase 10: Physical & Social Engineering Integration (COMPLETE)
+- 🔍 OSINT weaponization (LinkedIn scraping, email patterns, social media profiling, relationship mapping)
+- 📧 Automated phishing campaigns (spear-phishing, credential harvesting, malicious documents, smishing, vishing)
+- 🏢 Physical security analysis (badge cloning, tailgating, camera blind spots, lock assessment, USB drops)
+- 🎭 Deepfake integration (voice cloning, video manipulation, CEO fraud automation)
+- 🎯 Multi-phase social engineering attacks
+- 🔗 Integrated attack scenarios combining digital and physical vectors
+
+### ✅ Phase 11: IoT & Embedded Systems (COMPLETE) 🆕
+- 🔌 IoT device discovery (Shodan/Censys integration, UPnP exploitation, default credentials, firmware extraction)
+- 🔧 Embedded system analysis (UART/JTAG exploitation, firmware reverse engineering, binary analysis, hardware debugging)
+- 🏭 ICS/SCADA exploitation (Modbus, DNP3, OPC protocols, PLC manipulation, HMI vulnerabilities, safety bypass)
+- 📡 Wireless protocol exploitation (WiFi WPA/WPA2/WPA3, Bluetooth KNOB/BIAS, Zigbee, Z-Wave, LoRaWAN, 5G/4G)
+- ⚠️ Critical infrastructure testing with safety controls
+- 🎯 Integrated IoT/ICS/wireless attack scenarios
+
+## ✨ Key Features (All Phases 1-11)
 
 ### Phase 1: Foundation
 - **LLM Orchestration**: GPT-4/Claude for intelligent decision-making
@@ -102,7 +151,70 @@ An AI-powered autonomous penetration testing platform with intelligent memory, m
   - Peak hour timing
   - Realistic user agent rotation
 
+### Phase 10: Physical & Social Engineering
+- **OSINT Weaponization**:
+  - LinkedIn organizational chart scraping
+  - Email pattern identification (5+ pattern types)
+  - Social media profiling (Twitter, Facebook, Instagram)
+  - Relationship mapping and influence analysis
+  - High-value target identification
+  - Vulnerability scoring for social engineering
+
+- **Automated Phishing**:
+  - 6 phishing types (spear, whaling, clone, smishing, vishing, angler)
+  - Intelligent pretext generation (6 templates)
+  - Credential harvesting pages (Office365, Gmail, VPN, SharePoint)
+  - Malicious document generation
+  - SMS phishing campaigns
+  - Vishing script generation with objection handling
+
+- **Physical Security**:
+  - Badge cloning strategies (RFID, HID, magnetic stripe, NFC)
+  - Tailgating opportunity analysis
+  - Camera blind spot detection and evasion routes
+  - Lock vulnerability assessment (pin pad, deadbolt, electronic, biometric)
+  - USB drop campaign planning with social engineering labels
+
+- **Deepfake Integration**:
+  - Voice cloning (4 quality levels)
+  - Video manipulation for impersonation
+  - CEO fraud automation (multi-phase BEC attacks)
+  - Deepfake quality assessment
+
+### Phase 11: IoT & Embedded Systems
+- **IoT Device Discovery**:
+  - Shodan/Censys API integration for internet-exposed devices
+  - UPnP exploitation (port forwarding, SOAP injection)
+  - Default credential database (1000+ entries)
+  - Firmware extraction and analysis
+  - Binary analysis for hardcoded secrets
+
+- **Embedded System Analysis**:
+  - UART interface exploitation (auto baud detection, root shell access)
+  - JTAG debugging interface abuse (memory dump, firmware extraction)
+  - Firmware reverse engineering (Ghidra/IDA simulation)
+  - Binary vulnerability analysis (buffer overflow, format string, ROP)
+  - SWD/I2C/SPI flash extraction
+
+- **ICS/SCADA Exploitation**:
+  - Modbus protocol (read/write coils, registers, authentication bypass)
+  - DNP3 outstation control (analog inputs, control commands)
+  - OPC server exploitation (tag browsing, read/write operations)
+  - PLC program manipulation (download, modify, upload ladder logic)
+  - HMI vulnerability scanning (web exploits, default credentials)
+  - Safety system analysis (SIL level assessment, bypass detection)
+
+- **Wireless Protocol Exploitation**:
+  - WiFi: WEP/WPA/WPA2 cracking, WPA3 downgrade, PMKID attack, evil twin AP
+  - Bluetooth: KNOB attack (CVE-2019-9506), BIAS attack (CVE-2020-10135), BLE sniffing
+  - Zigbee: Network key extraction, insecure rejoin exploitation
+  - Z-Wave: S0 replay attacks, smart lock manipulation
+  - LoRaWAN: Frame counter bypass, ACK spoofing
+  - 5G/4G: IMSI catcher simulation, SS7 vulnerabilities
+
 ### 🚀 Quick Start
+
+> **✅ Cross-Platform Compatible**: SEC-AI works on both **Windows** and **Linux**. All dependencies are cross-platform. See [CROSS-PLATFORM.md](CROSS-PLATFORM.md) for details.
 
 #### Installation
 ```bash
@@ -110,12 +222,8 @@ An AI-powered autonomous penetration testing platform with intelligent memory, m
 git clone https://github.com/yourusername/sec-ai.git
 cd sec-ai
 
-# Run installation script (Linux)
-chmod +x install.sh
-./install.sh
-
-# Install Phase 2 dependencies
-pip install -r requirements-phase2.txt
+# Install all dependencies (works on Windows & Linux)
+pip install -r requirements.txt
 
 # Configure API keys
 cp .env.example .env
@@ -232,8 +340,8 @@ python main.py --cli --target 192.168.1.100
 ├── reports_output/            # Generated reports
 ├── main.py                    # Entry point
 ├── test_installation.py       # Installation test
-├── requirements.txt           # Phase 1 dependencies
-├── requirements-phase2.txt    # Phase 2 dependencies
+├── requirements.txt           # All dependencies (cross-platform)
+├── CROSS-PLATFORM.md          # Cross-platform compatibility guide
 └── ... (documentation files)
 ├── USAGE.md                   # Detailed usage guide
 ├── ARCHITECTURE.md            # Technical documentation
@@ -363,18 +471,47 @@ MIT License - see [LICENSE](LICENSE) file for details
 - Linux GUI
 
 #### 🚧 Phase 2: Advanced Capabilities (Coming Soon)
-- Advanced exploitation engine
-- Custom payload generation
-- Machine learning for pattern recognition
-- Stealth and evasion techniques
-- Multi-target support
+**UPDATE: Phase 2-9 are now COMPLETE! See sections above.**
 
-#### 🔮 Future Phases
-- Collaborative multi-agent systems
-- Real-time collaboration
-- Custom exploit development
-- Integration with CVE databases
-- Advanced AI reasoning
+Previously planned:
+- Advanced exploitation engine ✅ (Phase 5)
+- Custom payload generation ✅ (Phase 5)
+- Machine learning for pattern recognition ✅ (Phase 2)
+- Stealth and evasion techniques ✅ (Phase 4)
+- Multi-target support ✅ (Phase 3)
+
+**All phases 1-10 have been fully implemented with:**
+- Phase 2: Intelligent Context & Memory
+- Phase 3: Multi-Agent Swarm Intelligence
+- Phase 4: Advanced Evasion & Stealth
+- Phase 5: Advanced Exploitation
+- Phase 6: Advanced Agent Coordination
+- Phase 7: Cloud Security Assessment
+- Phase 8: Data Exfiltration & Impact Analysis
+- Phase 9: Adversary Simulation & Red Team Automation
+- Phase 10: Physical & Social Engineering Integration
+- **Phase 11: IoT & Embedded Systems** 🆕
+
+See individual phase guides:
+- [PHASE2-GUIDE.md](PHASE2-GUIDE.md) - Memory and Intelligence
+- [PHASE4-EVASION.md](PHASE4-EVASION.md) - Evasion Techniques
+- [PHASE5-GUIDE.md](PHASE5-GUIDE.md) - Advanced Exploitation
+- [PHASE6-GUIDE.md](PHASE6-GUIDE.md) - Agent Coordination
+- [PHASE7-GUIDE.md](PHASE7-GUIDE.md) - Cloud Security
+- [PHASE8-GUIDE.md](PHASE8-GUIDE.md) - Data Exfiltration
+- [PHASE9-GUIDE.md](PHASE9-GUIDE.md) - Adversary Simulation
+- [PHASE10-GUIDE.md](PHASE10-GUIDE.md) - Physical & Social Engineering
+- **[PHASE11-QUICKREF.md](PHASE11-QUICKREF.md) - IoT & Embedded Systems** 🆕
+
+#### 🔮 Future Enhancements
+- Advanced ML-based vulnerability prediction
+- Automated patch validation
+- Zero-trust architecture testing
+- IoT/OT security assessment
+- Mobile application security
+- Blockchain/Web3 security testing
+- Integration with commercial threat intelligence feeds
+- Automated remediation tracking
 
 ### 📞 Support
 

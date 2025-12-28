@@ -1,3 +1,12 @@
+# ===============================================================================
+# SEC-AI Requirements - Cross-Platform Compatible (Windows & Linux)
+# ===============================================================================
+# All dependencies in this file work on both Windows and Linux.
+# Platform-specific libraries (pywin32, wmi, python-pam, evdev, pybluez) have
+# been removed. Code that requires OS-specific functionality should gracefully
+# handle missing imports and provide simulation/fallback behavior.
+# ===============================================================================
+
 # Core dependencies
 openai>=1.0.0
 anthropic>=0.18.0
@@ -179,8 +188,8 @@ cryptography>=41.0.0
 # Kerberos and Windows authentication
 pypykatz>=0.6.0
 impacket>=0.11.0
-pywin32>=306; platform_system=="Windows"
-wmi>=1.5.1; platform_system=="Windows"
+# Note: pywin32 and wmi are Windows-only - removed for cross-platform compatibility
+# Note: Windows-specific features should gracefully handle missing imports
 
 # Network and protocol handling
 scapy>=2.5.0
@@ -211,9 +220,8 @@ pysftp>=0.2.9
 selenium>=4.11.0
 pyppeteer>=1.0.2
 
-# Linux-specific
-python-pam>=2.0.2; platform_system=="Linux"
-evdev>=1.6.1; platform_system=="Linux"
+# Note: python-pam and evdev are Linux-only - removed for cross-platform compatibility
+# Note: Linux-specific features should gracefully handle missing imports
 
 # Password cracking
 hashcat-utils>=1.9.0
@@ -279,14 +287,14 @@ requests>=2.31.0
 
 # Process/System
 psutil>=5.9.6
-pywin32>=306; platform_system == "Windows"
+# Note: pywin32 is Windows-only - removed for cross-platform compatibility
 
 # Networking
 dnspython>=2.4.2
 netaddr>=0.9.0
 
 # Privilege Escalation
-pefile>=2023.2.7; platform_system == "Windows"
+# Note: pefile is already included above and works cross-platform
 
 # Utilities
 python-dateutil>=2.8.2
@@ -298,7 +306,7 @@ colorama>=0.4.6
 
 # Data Discovery
 python-magic>=0.4.27
-python-magic-bin>=0.4.14; sys_platform == 'win32'
+# Note: python-magic-bin is Windows-only - use python-magic-bin manually on Windows if needed
 Pillow>=10.0.0
 PyPDF2>=3.0.0
 
@@ -313,5 +321,100 @@ psycopg2-binary>=2.9.9
 # Steganography
 numpy>=1.24.0
 
-# All previous phases
--r requirements-phase7.txt
+
+# Phase 9: Adversary Simulation & Red Team Automation Requirements
+
+# MITRE ATT&CK Integration
+requests>=2.31.0
+mitreattack-python>=3.0.0
+
+# Data handling
+pyyaml>=6.0
+
+# Async support (already in previous phases)
+# aiohttp>=3.9.0
+
+# Schedule management
+schedule>=1.2.0
+croniter>=2.0.0
+
+
+
+# Phase 10 Requirements: Physical & Social Engineering Integration
+
+# Core dependencies
+asyncio-throttle>=1.0.0
+aiohttp>=3.9.0
+
+# OSINT and web scraping (use with authorization only)
+beautifulsoup4>=4.12.0
+selenium>=4.15.0
+requests>=2.31.0
+
+# Email and phishing
+email-validator>=2.1.0
+jinja2>=3.1.2
+
+# Image and video processing (for deepfake simulation metadata)
+pillow>=10.1.0
+opencv-python>=4.8.0  # For camera analysis simulation
+
+# Audio processing (for voice analysis simulation)
+# Note: Actual deepfake generation requires specialized tools
+# pydub>=0.25.1  # Optional, for audio manipulation
+
+# Physical security analysis
+# Hardware interface libraries would be needed for actual badge cloning
+# pyserial>=3.5  # For hardware interface (Proxmark3, etc.)
+
+# Data visualization and reporting
+matplotlib>=3.8.0
+pandas>=2.1.0
+
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+
+# Phase 11: IoT & Embedded Systems Security Testing
+# ==================================================
+
+# Core dependencies
+asyncio
+aiohttp>=3.8.0
+python-dateutil>=2.8.0
+
+# IoT Device Discovery
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+selenium>=4.0.0
+shodan>=1.28.0  # Optional - requires API key
+
+# Firmware Analysis
+binwalk>=2.3.0  # Firmware extraction
+python-magic>=0.4.27
+pycryptodome>=3.15.0  # Crypto analysis
+
+# Embedded Systems
+pyserial>=3.5  # UART communication
+pyusb>=1.2.1  # USB device access
+
+# ICS/SCADA Protocols
+pymodbus>=3.0.0  # Modbus protocol
+scapy>=2.5.0  # Packet manipulation (DNP3, etc.)
+
+# Wireless
+# Note: Many wireless tools require system packages and special hardware
+# WiFi: aircrack-ng, hashcat (system packages)
+# Bluetooth: bluez (system package)
+# Note: pybluez is Linux-only and not actually used - wireless attacks are simulated
+# Note: Actual wireless hardware access requires platform-specific tools
+
+# Analysis & Reporting
+networkx>=2.8.0  # Network graph analysis
+matplotlib>=3.5.0
+pandas>=1.4.0
+
+# Utilities
+colorama>=0.4.6
+tqdm>=4.64.0
