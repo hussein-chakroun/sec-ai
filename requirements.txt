@@ -81,7 +81,7 @@ redis>=5.0.0
 celery>=5.3.0
 
 # Async/Parallel Processing (Phase 3)
-asyncio>=3.4.3
+# Note: asyncio is part of Python standard library (3.7+)
 aiohttp>=3.9.0
 multiprocessing-logging>=0.3.0
 
@@ -94,8 +94,10 @@ scikit-learn>=1.0.0
 # Phase 5: Zero-Day Discovery & Exploit Development Requirements
 
 # Fuzzing Tools
-afl-utils>=1.35  # AFL++ utilities
-honggfuzz>=2.5  # Honggfuzz fuzzer (if available via pip)
+# Note: AFL++ and Honggfuzz require system-level installation
+# - AFL++: Install via package manager or from source (https://github.com/AFLplusplus/AFLplusplus)
+# - Honggfuzz: Install from https://github.com/google/honggfuzz
+# Python bindings for fuzzing frameworks are limited; most work is done via CLI
 
 # Symbolic Execution
 angr>=9.2.0  # Binary analysis and symbolic execution
@@ -224,7 +226,8 @@ pyppeteer>=1.0.2
 # Note: Linux-specific features should gracefully handle missing imports
 
 # Password cracking
-hashcat-utils>=1.9.0
+# Note: hashcat is a system-level tool, install separately
+# - Hashcat: https://hashcat.net/hashcat/
 passlib>=1.7.4
 
 # Persistence and rootkit tools
@@ -380,7 +383,7 @@ pytz>=2023.3
 # ==================================================
 
 # Core dependencies
-asyncio
+# Note: asyncio is part of Python standard library (3.7+)
 aiohttp>=3.8.0
 python-dateutil>=2.8.0
 
