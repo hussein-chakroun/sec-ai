@@ -1,0 +1,66 @@
+application:
+  name: "SEC-AI Pentesting Platform"
+  version: "0.1.0-phase1"
+  debug: false
+
+llm:
+  temperature: 0.7
+  max_tokens: 4096
+  timeout: 120
+
+tools:
+  nmap:
+    enabled: true
+    timeout: 600
+    default_flags: ["-sV", "-sC", "-O"]
+    
+  sqlmap:
+    enabled: true
+    timeout: 1800
+    default_flags: ["--batch", "--level=1", "--risk=1"]
+    
+  hydra:
+    enabled: true
+    timeout: 1800
+    default_threads: 16
+    
+  metasploit:
+    enabled: true
+    timeout: 3600
+    database: "postgresql://msf:msf@localhost/msf"
+
+scanning:
+  max_concurrent_scans: 3
+  auto_escalate: false
+  safe_mode: true
+
+reporting:
+  format: ["html", "json", "pdf"]
+  include_screenshots: false
+  severity_levels: ["critical", "high", "medium", "low", "info"]
+
+# Phase 2: Memory and Learning Settings
+memory:
+  enabled: true
+  vector_db_path: "./data/vectordb"
+  persistent_db_path: "./data/memory.db"
+  knowledge_base_path: "./data/knowledge"
+
+learning:
+  enabled: true
+  auto_train: true
+  min_samples_for_training: 10
+  success_rate_threshold: 0.7
+  cost_benefit_threshold: 1.0
+
+pattern_recognition:
+  enabled: true
+  anomaly_detection: true
+  similarity_threshold: 0.7
+
+self_improvement:
+  enabled: true
+  analyze_failures: true
+  optimize_parameters: true
+  adaptive_strategy: true
+  build_custom_wordlists: true
