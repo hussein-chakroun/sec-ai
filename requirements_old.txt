@@ -1,0 +1,411 @@
+# ===============================================================================
+# SEC-AI Requirements - Cross-Platform Compatible (Windows & Linux)
+# ===============================================================================
+# Python Version: 3.11.0 - 3.12.x (Tested and compatible)
+# All dependencies in this file work on both Windows and Linux.
+# Platform-specific libraries (pywin32, wmi, python-pam, evdev, pybluez) have
+# been removed. Code that requires OS-specific functionality should gracefully
+# handle missing imports and provide simulation/fallback behavior.
+# ===============================================================================
+
+# Core dependencies
+openai>=1.0.0,<2.0.0
+anthropic>=0.18.0,<1.0.0
+python-dotenv>=1.0.0,<2.0.0
+
+# GUI
+PyQt5>=5.15.0,<6.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Network and scanning
+python-nmap>=0.7.1,<1.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+scapy>=2.5.0,<3.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Report generation
+jinja2>=3.1.2,<4.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+markdown>=3.5.0,<4.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+reportlab>=4.0.0,<5.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Utilities
+pyyaml>=6.0.1,<7.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+requests>=2.31.0,<3.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+colorama>=0.4.6,<1.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+rich>=13.7.0,<14.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Database
+sqlalchemy>=2.0.0,<3.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Logging
+loguru>=0.7.2,<1.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Vector database and embeddings for Phase 2
+chromadb>=0.4.22,<1.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+sentence-transformers>=2.2.2,<3.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+faiss-cpu>=1.7.4,<2.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Memory and storage
+redis>=5.0.1,<6.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+alembic>=1.13.0,<2.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Knowledge base
+# cve-search>=0.1  # Requires sleekxmpp (incompatible with Python 3.11+), using nvdlib instead
+nvdlib>=0.7.4,<1.0.0  # National Vulnerability Database API, Python 3.11-3.12, Linux/Windows
+cvelib>=0.7.0,<1.0.0  # CVE search and analysis library, Python 3.11-3.12, Linux/Windows
+pymisp>=2.4.0,<3.0.0  # MISP threat intelligence platform, Python 3.11-3.12, Linux/Windows
+
+# Machine learning
+scikit-learn>=1.3.2,<2.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+numpy>=1.24.0,<2.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+pandas>=2.1.0,<3.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Pattern recognition
+fuzzywuzzy>=0.18.0,<1.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+python-Levenshtein>=0.23.0,<1.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Enhanced analysis
+networkx>=3.2.1,<4.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+matplotlib>=3.8.2,<4.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Phase 2 & 3 Dependencies - Consolidated above to avoid duplicates
+
+# Redis for agent coordination (Phase 3)
+celery>=5.3.0,<6.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+# Async/Parallel Processing (Phase 3)
+# Note: asyncio is part of Python standard library (3.7+)
+aiohttp>=3.9.0,<4.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+multiprocessing-logging>=0.3.0,<1.0.0  # Compatible with Python 3.11-3.12, Linux/Windows
+
+
+# Phase 4: Advanced Evasion & Stealth - Already included above
+
+
+# Phase 5: Zero-Day Discovery & Exploit Development Requirements
+
+# Fuzzing Tools
+# Note: AFL++ and Honggfuzz require system-level installation
+# - AFL++: Install via package manager or from source (https://github.com/AFLplusplus/AFLplusplus)
+# - Honggfuzz: Install from https://github.com/google/honggfuzz
+# Python bindings for fuzzing frameworks are limited; most work is done via CLI
+
+# Symbolic Execution
+angr>=9.2.0  # Binary analysis and symbolic execution
+claripy>=9.2.0  # Constraint solver for angr
+pyvex>=9.2.0  # VEX IR translation
+
+# Binary Analysis
+r2pipe>=1.7.0  # Radare2 Python bindings
+capstone>=5.0.0  # Disassembly framework
+keystone-engine>=0.9.2  # Assembler framework
+unicorn>=2.0.0  # CPU emulator
+
+# Reverse Engineering
+pyelftools>=0.29  # ELF file parsing
+pefile>=2023.2.7  # PE file parsing
+lief>=0.13.0  # Binary parsing (ELF, PE, Mach-O)
+
+# Exploit Development
+pwntools>=4.10.0  # Exploit development framework
+ropper>=1.13.8  # ROP gadget finder
+ROPgadget>=7.3  # Alternative ROP gadget finder
+
+# Code Analysis
+tree-sitter>=0.20.0  # Fast code parsing
+libclang>=16.0.0  # C/C++ parsing
+jedi>=0.19.0  # Python code analysis
+astroid>=3.0.0  # Python AST analysis
+
+# Static Analysis
+bandit>=1.7.5  # Python security analysis
+pylint>=3.0.0  # Python linting
+semgrep>=1.45.0  # Multi-language static analysis
+
+# Dynamic Analysis (Python bindings where available)
+# Note: Many require system installation
+# - Valgrind (system package)
+# - PIN (Intel binary instrumentation)
+# - DynamoRIO (binary instrumentation)
+# - Frida (dynamic instrumentation)
+frida>=16.1.0
+frida-tools>=12.2.0
+
+# Cryptography Analysis
+cryptography>=41.0.0  # Crypto library for testing
+pycryptodome>=3.19.0  # Crypto primitives
+
+# Network/API Testing
+aiohttp>=3.9.0  # Async HTTP client
+httpx>=0.25.0  # HTTP client
+requests>=2.31.0  # HTTP library
+
+# Data Processing
+lxml>=4.9.3  # XML processing
+pyyaml>=6.0.1  # YAML processing
+msgpack>=1.0.7  # MessagePack serialization
+
+# Machine Learning (for pattern recognition)
+scikit-learn>=1.3.0  # ML algorithms
+numpy>=1.24.0  # Numerical computing
+pandas>=2.0.0  # Data analysis
+
+# Utilities
+tqdm>=4.66.0  # Progress bars
+colorama>=0.4.6  # Terminal colors
+rich>=13.7.0  # Rich terminal output
+psutil>=5.9.0  # Process and system utilities
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Code Quality
+black>=23.12.0
+isort>=5.13.0
+mypy>=1.7.0
+
+
+# Phase 6: Advanced Persistence & Command Infrastructure Requirements
+
+# Core async libraries
+aiohttp>=3.8.0
+aiofiles>=23.0.0
+aiodns>=3.0.0
+
+# Cryptography
+pycryptodome>=3.18.0
+cryptography>=41.0.0
+
+# Kerberos and Windows authentication
+pypykatz>=0.6.0
+impacket>=0.11.0
+# Note: pywin32 and wmi are Windows-only - removed for cross-platform compatibility
+# Note: Windows-specific features should gracefully handle missing imports
+
+# Network and protocol handling
+scapy>=2.5.0
+dnspython>=2.4.0
+websockets>=11.0
+
+# Cloud providers
+boto3>=1.28.0  # AWS
+azure-storage-blob>=12.17.0  # Azure
+google-cloud-storage>=2.10.0  # Google Cloud
+dropbox>=11.36.0  # Dropbox
+requests>=2.31.0  # General HTTP
+
+# Image processing (for steganography)
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# Database access
+PyMySQL>=1.1.0
+psycopg2-binary>=2.9.0
+pymongo>=4.4.0
+
+# SSH/FTP clients
+paramiko>=3.3.0
+pysftp>=0.2.9
+
+# Browser automation
+selenium>=4.11.0
+pyppeteer>=1.0.2
+
+# Note: python-pam and evdev are Linux-only - removed for cross-platform compatibility
+# Note: Linux-specific features should gracefully handle missing imports
+
+# Password cracking
+# Note: hashcat is a system-level tool, install separately
+# - Hashcat: https://hashcat.net/hashcat/
+passlib>=1.7.4
+
+# Persistence and rootkit tools
+pefile>=2023.2.7  # PE file manipulation
+pyelftools>=0.29  # ELF file manipulation
+
+# Memory analysis
+volatility3>=2.4.0
+
+# Additional utilities
+python-dotenv>=1.0.0
+pyyaml>=6.0
+colorama>=0.4.6
+tabulate>=0.9.0
+tqdm>=4.66.0
+
+# Already required from previous phases
+# (include if running Phase 6 standalone)
+openai>=1.0.0
+anthropic>=0.3.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+
+# Phase 7: Lateral Movement & Domain Dominance Requirements
+
+# Active Directory Tools
+impacket>=0.11.0
+neo4j>=5.14.0
+ldap3>=2.9.1
+pyasn1>=0.5.0
+
+# Network Tools
+paramiko>=3.3.1
+pexpect>=4.8.0
+python-nmap>=0.7.1
+scapy>=2.5.0
+
+# Database Clients
+pymssql>=2.2.8
+psycopg2-binary>=2.9.9
+pymongo>=4.5.0
+mysql-connector-python>=8.2.0
+
+# Container/Cloud
+docker>=6.1.3
+kubernetes>=28.1.0
+boto3>=1.29.7
+azure-identity>=1.14.1
+google-cloud-compute>=1.15.0
+
+# Cryptography
+cryptography>=41.0.7
+pycryptodome>=3.19.0
+
+# HTTP/Web
+aiohttp>=3.9.1
+requests>=2.31.0
+
+# Process/System
+psutil>=5.9.6
+# Note: pywin32 is Windows-only - removed for cross-platform compatibility
+
+# Networking
+dnspython>=2.4.2
+netaddr>=0.9.0
+
+# Privilege Escalation
+# Note: pefile is already included above and works cross-platform
+
+# Utilities
+python-dateutil>=2.8.2
+pyyaml>=6.0.1
+colorama>=0.4.6
+
+
+# Phase 8: Data Exfiltration & Impact Analysis Requirements
+
+# Data Discovery
+python-magic>=0.4.27
+# Note: python-magic-bin is Windows-only - use python-magic-bin manually on Windows if needed
+Pillow>=10.0.0
+PyPDF2>=3.0.0
+
+# DNS and Network
+dnspython>=2.4.0
+aiohttp>=3.9.0
+
+# Database Analysis
+pymysql>=1.1.0
+psycopg2-binary>=2.9.9
+
+# Steganography
+numpy>=1.24.0
+
+
+# Phase 9: Adversary Simulation & Red Team Automation Requirements
+
+# MITRE ATT&CK Integration
+requests>=2.31.0
+mitreattack-python>=3.0.0
+
+# Data handling
+pyyaml>=6.0
+
+# Async support (already in previous phases)
+# aiohttp>=3.9.0
+
+# Schedule management
+schedule>=1.2.0
+croniter>=2.0.0
+
+
+
+# Phase 10 Requirements: Physical & Social Engineering Integration
+
+# Core dependencies
+asyncio-throttle>=1.0.0
+aiohttp>=3.9.0
+
+# OSINT and web scraping (use with authorization only)
+beautifulsoup4>=4.12.0
+selenium>=4.15.0
+requests>=2.31.0
+
+# Email and phishing
+email-validator>=2.1.0
+jinja2>=3.1.2
+
+# Image and video processing (for deepfake simulation metadata)
+pillow>=10.1.0
+opencv-python>=4.8.0  # For camera analysis simulation
+
+# Audio processing (for voice analysis simulation)
+# Note: Actual deepfake generation requires specialized tools
+# pydub>=0.25.1  # Optional, for audio manipulation
+
+# Physical security analysis
+# Hardware interface libraries would be needed for actual badge cloning
+# pyserial>=3.5  # For hardware interface (Proxmark3, etc.)
+
+# Data visualization and reporting
+matplotlib>=3.8.0
+pandas>=2.1.0
+
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+
+# Phase 11: IoT & Embedded Systems Security Testing
+# ==================================================
+
+# Core dependencies
+# Note: asyncio is part of Python standard library (3.7+)
+aiohttp>=3.8.0
+python-dateutil>=2.8.0
+
+# IoT Device Discovery
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+selenium>=4.0.0
+shodan>=1.28.0  # Optional - requires API key
+
+# Firmware Analysis
+# binwalk>=2.3.0  # Not available for Python 3.11  # Firmware extraction
+python-magic>=0.4.27
+pycryptodome>=3.15.0  # Crypto analysis
+
+# Embedded Systems
+pyserial>=3.5  # UART communication
+pyusb>=1.2.1  # USB device access
+
+# ICS/SCADA Protocols
+pymodbus>=3.0.0  # Modbus protocol
+scapy>=2.5.0  # Packet manipulation (DNP3, etc.)
+
+# Wireless
+# Note: Many wireless tools require system packages and special hardware
+# WiFi: aircrack-ng, hashcat (system packages)
+# Bluetooth: bluez (system package)
+# Note: pybluez is Linux-only and not actually used - wireless attacks are simulated
+# Note: Actual wireless hardware access requires platform-specific tools
+
+# Analysis & Reporting
+networkx>=2.8.0  # Network graph analysis
+matplotlib>=3.5.0
+pandas>=1.4.0
+
+# Utilities
+colorama>=0.4.6
+tqdm>=4.64.0

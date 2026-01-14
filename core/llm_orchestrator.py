@@ -247,10 +247,12 @@ class OllamaProvider(BaseLLMProvider):
 class LLMOrchestrator:
     """Main orchestrator for LLM-based pentesting decisions"""
     
-    def __init__(self, provider: BaseLLMProvider):
+    def __init__(self, provider: BaseLLMProvider, low_context_mode: bool = False, chunk_size: int = 2000):
         self.provider = provider
         self.conversation_history = []
-        logger.info("LLM Orchestrator initialized")
+        self.low_context_mode = low_context_mode
+        self.chunk_size = chunk_size
+        logger.info(f"LLM Orchestrator initialized (low_context_mode: {low_context_mode})")
     
     def analyze_target(self, target: str) -> Dict[str, Any]:
         """Analyze target and determine initial scanning strategy"""
@@ -384,6 +386,49 @@ class LLMOrchestrator:
         
         results_str = json.dumps(all_results, indent=2)
         
+        # In low context mode, process results in chunks
+        if self.low_context_mode:
+            logger.info("Processing recommendations in low context mode")
+            chunks = self._chunk_data(results_str)
+            chunk_responses = []
+            
+            for idx, chunk in enumerate(chunks, 1):
+                logger.info(f"Processing chunk {idx}/{len(chunks)}")
+                
+                chunk_prompt = f"""Scan Results (Part {idx}/{len(chunks)}):
+        {chunk}
+        
+        Please provide:
+        1. Executive summary for this portion
+        2. Identified vulnerabilities (with severity ratings)
+        3. Exploitable vulnerabilities
+        4. Remediation recommendations
+        5. Risk assessment
+        
+        Respond ONLY with valid JSON in this exact format:
+        {{
+            "executive_summary": "brief overview",
+            "vulnerabilities": [
+                {{"name": "vuln name", "severity": "critical/high/medium/low", "description": "details"}}
+            ],
+            "exploitable": ["list of exploitable vulnerabilities"],
+            "remediation": ["list of recommendations"],
+            "risk_level": "critical/high/medium/low"
+        }}"""
+                
+                response = self.provider.generate(chunk_prompt, system_prompt)
+                parsed_response = self._parse_json_response(response, {
+                    "executive_summary": f"Unable to parse chunk {idx}",
+                    "vulnerabilities": [],
+                    "exploitable": [],
+                    "remediation": [],
+                    "risk_level": "unknown"
+                })
+                chunk_responses.append(parsed_response)
+            
+            return self._process_chunked_results(chunk_responses)
+        
+        # Normal mode: process all at once
         prompt = f"""Complete Scan Results:
         {results_str}
         
@@ -407,13 +452,25 @@ class LLMOrchestrator:
         
         response = self.provider.generate(prompt, system_prompt)
         
+        # Parse the response
+        return self._parse_json_response(response, {
+            "executive_summary": "Unable to parse LLM response",
+            "vulnerabilities": [],
+            "exploitable": [],
+            "remediation": ["Review raw response for findings"],
+            "risk_level": "unknown",
+            "raw_response": response
+        })
+    
+    def _parse_json_response(self, response: str, fallback: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse JSON response with fallback handling"""
         # Try to extract JSON from response
         try:
             return json.loads(response)
         except json.JSONDecodeError:
             import re
             # Try to extract JSON from markdown code blocks
-            json_match = re.search(r'```(?:json)?\\s*({.*?})\\s*```', response, re.DOTALL)
+            json_match = re.search(r'```(?:json)?\s*({.*?})\s*```', response, re.DOTALL)
             if json_match:
                 try:
                     return json.loads(json_match.group(1))
@@ -429,14 +486,91 @@ class LLMOrchestrator:
                     pass
             
             logger.warning("Failed to parse JSON response, returning structured fallback")
-            return {
-                "executive_summary": "Unable to parse LLM response",
-                "vulnerabilities": [],
-                "exploitable": [],
-                "remediation": ["Review raw response for findings"],
-                "risk_level": "unknown",
-                "raw_response": response
-            }
+            fallback["raw_response"] = response
+            return fallback
+    
+    def _chunk_data(self, data: str) -> List[str]:
+        """Split data into chunks based on chunk_size"""
+        if not self.low_context_mode:
+            return [data]
+        
+        # Simple character-based chunking (approximation of tokens)
+        # Roughly 4 characters per token on average
+        char_limit = self.chunk_size * 4
+        
+        if len(data) <= char_limit:
+            return [data]
+        
+        chunks = []
+        lines = data.split('\n')
+        current_chunk = []
+        current_size = 0
+        
+        for line in lines:
+            line_size = len(line) + 1  # +1 for newline
+            if current_size + line_size > char_limit and current_chunk:
+                chunks.append('\n'.join(current_chunk))
+                current_chunk = [line]
+                current_size = line_size
+            else:
+                current_chunk.append(line)
+                current_size += line_size
+        
+        if current_chunk:
+            chunks.append('\n'.join(current_chunk))
+        
+        logger.info(f"Split data into {len(chunks)} chunks for low context mode")
+        return chunks
+    
+    def _process_chunked_results(self, chunk_responses: List[Dict]) -> Dict[str, Any]:
+        """Combine multiple chunk responses into a single result"""
+        if len(chunk_responses) == 1:
+            return chunk_responses[0]
+        
+        # Combine vulnerabilities and recommendations from all chunks
+        combined = {
+            "executive_summary": "",
+            "vulnerabilities": [],
+            "exploitable": [],
+            "remediation": [],
+            "risk_level": "low"
+        }
+        
+        risk_levels = {"low": 0, "medium": 1, "high": 2, "critical": 3}
+        max_risk = 0
+        
+        for idx, response in enumerate(chunk_responses, 1):
+            # Combine summaries
+            if response.get("executive_summary"):
+                combined["executive_summary"] += f"\n\nChunk {idx}: {response['executive_summary']}"
+            
+            # Combine vulnerabilities
+            if response.get("vulnerabilities"):
+                combined["vulnerabilities"].extend(response["vulnerabilities"])
+            
+            # Combine exploitable items
+            if response.get("exploitable"):
+                combined["exploitable"].extend(response["exploitable"])
+            
+            # Combine remediation
+            if response.get("remediation"):
+                combined["remediation"].extend(response["remediation"])
+            
+            # Track highest risk level
+            risk = response.get("risk_level", "low")
+            if risk in risk_levels and risk_levels[risk] > max_risk:
+                max_risk = risk_levels[risk]
+                combined["risk_level"] = risk
+        
+        # Clean up summary
+        combined["executive_summary"] = combined["executive_summary"].strip()
+        
+        # Deduplicate lists
+        combined["exploitable"] = list(set(combined["exploitable"]))
+        combined["remediation"] = list(set(combined["remediation"]))
+        
+        logger.info(f"Combined {len(chunk_responses)} chunk responses")
+        return combined
     
     def clear_history(self):
         """Clear conversation history"""

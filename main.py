@@ -38,8 +38,16 @@ def run_cli(args):
     else:
         provider = AnthropicProvider(api_key, config.llm_model)
     
-    orchestrator = LLMOrchestrator(provider)
+    # Initialize orchestrator with low context mode if configured
+    orchestrator = LLMOrchestrator(
+        provider,
+        low_context_mode=config.low_context_mode,
+        chunk_size=config.low_context_chunk_size
+    )
     engine = PentestEngine(orchestrator)
+    
+    if config.low_context_mode:
+        logger.warning("Low context mode enabled - processing will take longer but use less memory")
     
     # Check tools
     logger.info("Checking installed tools...")

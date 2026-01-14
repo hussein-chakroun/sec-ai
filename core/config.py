@@ -149,6 +149,27 @@ class Config:
         return os.getenv("OLLAMA_MODEL", "llama2")
     
     @property
+    def low_context_mode(self) -> bool:
+        """Get low context mode setting"""
+        env_value = os.getenv("LOW_CONTEXT_MODE", "false").lower()
+        if env_value in ["true", "1", "yes"]:
+            return True
+        return self.get("llm.low_context_mode", False)
+    
+    @low_context_mode.setter
+    def low_context_mode(self, value: bool):
+        """Set low context mode"""
+        os.environ["LOW_CONTEXT_MODE"] = str(value)
+    
+    @property
+    def low_context_chunk_size(self) -> int:
+        """Get low context chunk size"""
+        env_value = os.getenv("LOW_CONTEXT_CHUNK_SIZE")
+        if env_value:
+            return int(env_value)
+        return self.get("llm.low_context_chunk_size", 2000)
+    
+    @property
     def report_output_dir(self) -> Path:
         """Get report output directory"""
         path = Path(os.getenv("REPORT_OUTPUT_DIR", "./reports_output"))
