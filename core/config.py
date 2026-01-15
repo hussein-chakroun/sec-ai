@@ -169,6 +169,11 @@ class Config:
             return int(env_value)
         return self.get("llm.low_context_chunk_size", 2000)
     
+    @low_context_chunk_size.setter
+    def low_context_chunk_size(self, value: int):
+        """Set low context chunk size"""
+        os.environ["LOW_CONTEXT_CHUNK_SIZE"] = str(value)
+    
     @property
     def report_output_dir(self) -> Path:
         """Get report output directory"""

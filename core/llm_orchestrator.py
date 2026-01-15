@@ -283,46 +283,39 @@ class LLMOrchestrator:
         self.conversation_history.append({"role": "user", "content": prompt})
         self.conversation_history.append({"role": "assistant", "content": response})
         
-        # Try to extract JSON from response
-        try:
-            # First, try direct parsing
-            return json.loads(response)
-        except json.JSONDecodeError:
-            # Try to extract JSON from markdown code blocks
-            import re
-            json_match = re.search(r'```(?:json)?\s*({.*?})\s*```', response, re.DOTALL)
-            if json_match:
-                try:
-                    return json.loads(json_match.group(1))
-                except json.JSONDecodeError:
-                    pass
-            
-            # Try to find JSON object in the response
-            json_match = re.search(r'{.*}', response, re.DOTALL)
-            if json_match:
-                try:
-                    return json.loads(json_match.group(0))
-                except json.JSONDecodeError:
-                    pass
-            
-            logger.warning("Failed to parse JSON response, returning structured fallback")
-            return {
-                "target_type": "unknown",
-                "nmap_flags": "-sV -sC",
-                "attack_vectors": ["web vulnerabilities", "network services"],
-                "risk_level": "medium",
-                "reasoning": "Unable to parse LLM response",
-                "raw_response": response
-            }
+        # Use improved JSON extraction
+        parsed_response = self._extract_json_from_response(response)
+        if parsed_response:
+            return parsed_response
+        
+        logger.warning("Failed to parse JSON response, returning structured fallback")
+        return {
+            "target_type": "unknown",
+            "nmap_flags": "-sV -sC",
+            "attack_vectors": ["web vulnerabilities", "network services"],
+            "risk_level": "medium",
+            "reasoning": "Unable to parse LLM response",
+            "raw_response": response
+        }
     
-    def decide_next_action(self, scan_results: Dict[str, Any], context: Optional[Dict] = None) -> Dict[str, Any]:
+    def decide_next_action(self, scan_results: Dict[str, Any], context: Optional[Dict] = None, retry_count: int = 0) -> Dict[str, Any]:
         """Decide next action based on scan results"""
         system_prompt = """You are an autonomous penetration testing AI. Based on the scan results,
         decide what action to take next. You can choose to run additional scans, attempt exploits,
-        or conclude the assessment. Always prioritize safety and authorized testing."""
+        or conclude the assessment. Always prioritize safety and authorized testing.
+        
+        CRITICAL: Always respond with ONLY a valid JSON object. No markdown, no explanations, just pure JSON."""
         
         context_str = json.dumps(context, indent=2) if context else "None"
         results_str = json.dumps(scan_results, indent=2)
+        
+        # In low context mode, use shorter prompts
+        if self.low_context_mode:
+            # Truncate results if too large
+            if len(results_str) > self.chunk_size:
+                results_str = results_str[:self.chunk_size] + "\n... (truncated for context limit)"
+            if len(context_str) > self.chunk_size // 2:
+                context_str = context_str[:self.chunk_size // 2] + "\n... (truncated)"
         
         prompt = f"""Previous Context: {context_str}
         
@@ -335,46 +328,131 @@ class LLMOrchestrator:
         3. Reasoning for this choice
         4. Expected outcome
         
-        Respond ONLY with valid JSON in this exact format:
+        Return ONLY this JSON structure with NO additional text:
         {{
-            "tool": "nmap/sqlmap/hydra/metasploit/none",
-            "parameters": ["--param1", "--param2"],
-            "reasoning": "explanation here",
-            "expected_outcome": "what we expect to find"
-        }}"""
+            "tool": "<tool_name>",
+            "parameters": {{"scan_type": "value"}},
+            "reasoning": "<explanation>",
+            "expected_outcome": "<outcome>"
+        }}
+        
+        Valid tools: nmap, sqlmap, hydra, metasploit, none (use none ONLY when assessment is truly complete)"""
         
         response = self.provider.generate(prompt, system_prompt)
         self.conversation_history.append({"role": "user", "content": prompt})
         self.conversation_history.append({"role": "assistant", "content": response})
         
         # Try to extract JSON from response
+        parsed_response = self._extract_json_from_response(response)
+        
+        if parsed_response:
+            # Validate the response has required fields
+            if "tool" in parsed_response:
+                # Ensure parameters is a dict if it's not already
+                if "parameters" in parsed_response and isinstance(parsed_response["parameters"], list):
+                    # Convert list to dict for compatibility
+                    parsed_response["parameters"] = {"args": parsed_response["parameters"]}
+                return parsed_response
+        
+        # If parsing failed and we haven't exceeded retries, try again with simpler prompt
+        if retry_count < 2:
+            logger.warning(f"Failed to parse LLM response (attempt {retry_count + 1}/3), retrying with simpler prompt")
+            import time
+            time.sleep(1)  # Brief delay before retry
+            return self.decide_next_action(scan_results, context, retry_count + 1)
+        
+        # After retries, provide intelligent fallback based on scan results
+        logger.warning("Failed to parse JSON response after retries, using intelligent fallback")
+        fallback = self._generate_fallback_decision(scan_results, context)
+        fallback["_fallback_used"] = True
+        fallback["_raw_response"] = response
+        return fallback
+    
+    def _extract_json_from_response(self, response: str) -> Optional[Dict[str, Any]]:
+        """Extract and parse JSON from LLM response with multiple strategies"""
+        import re
+        
+        # Strategy 1: Direct JSON parsing
         try:
             return json.loads(response)
         except json.JSONDecodeError:
-            import re
-            # Try to extract JSON from markdown code blocks
-            json_match = re.search(r'```(?:json)?\s*({.*?})\s*```', response, re.DOTALL)
-            if json_match:
-                try:
-                    return json.loads(json_match.group(1))
-                except json.JSONDecodeError:
-                    pass
-            
-            # Try to find JSON object in the response
-            json_match = re.search(r'{.*}', response, re.DOTALL)
-            if json_match:
-                try:
-                    return json.loads(json_match.group(0))
-                except json.JSONDecodeError:
-                    pass
-            
-            logger.warning("Failed to parse JSON response, returning structured fallback")
+            pass
+        
+        # Strategy 2: Extract from markdown code blocks
+        json_match = re.search(r'```(?:json)?\s*({.*?})\s*```', response, re.DOTALL)
+        if json_match:
+            try:
+                return json.loads(json_match.group(1))
+            except json.JSONDecodeError:
+                pass
+        
+        # Strategy 3: Find first JSON object in response
+        json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response, re.DOTALL)
+        if json_match:
+            try:
+                return json.loads(json_match.group(0))
+            except json.JSONDecodeError:
+                pass
+        
+        # Strategy 4: Try to find JSON between any braces
+        start = response.find('{')
+        end = response.rfind('}')
+        if start != -1 and end != -1 and end > start:
+            try:
+                return json.loads(response[start:end+1])
+            except json.JSONDecodeError:
+                pass
+        
+        return None
+    
+    def _generate_fallback_decision(self, scan_results: Dict[str, Any], context: Optional[Dict] = None) -> Dict[str, Any]:
+        """Generate intelligent fallback decision when LLM fails"""
+        # Analyze scan results to make a reasonable next step
+        result_str = str(scan_results).lower()
+        
+        # Check what we've found
+        has_open_ports = "open" in result_str or "port" in result_str
+        has_http = "http" in result_str or "80" in result_str or "443" in result_str or "8080" in result_str
+        has_sql = "sql" in result_str or "mysql" in result_str or "postgres" in result_str or "3306" in result_str
+        has_ssh = "ssh" in result_str or "22" in result_str
+        has_ftp = "ftp" in result_str or "21" in result_str
+        
+        # Determine next logical step
+        if has_http and "sqlmap" not in str(context).lower():
+            return {
+                "tool": "sqlmap",
+                "parameters": {"scan_type": "basic"},
+                "reasoning": "Fallback: HTTP service detected, testing for SQL injection",
+                "expected_outcome": "Identify SQL injection vulnerabilities"
+            }
+        elif has_ssh and "hydra" not in str(context).lower():
+            return {
+                "tool": "hydra",
+                "parameters": {"service": "ssh", "username": "root"},
+                "reasoning": "Fallback: SSH service detected, testing authentication",
+                "expected_outcome": "Test for weak credentials"
+            }
+        elif has_ftp and "hydra" not in str(context).lower():
+            return {
+                "tool": "hydra",
+                "parameters": {"service": "ftp", "username": "anonymous"},
+                "reasoning": "Fallback: FTP service detected, testing authentication",
+                "expected_outcome": "Test for anonymous or weak credentials"
+            }
+        elif has_open_ports:
+            return {
+                "tool": "metasploit",
+                "parameters": {"search_type": "auto"},
+                "reasoning": "Fallback: Open ports detected, searching for exploits",
+                "expected_outcome": "Find potential exploits for discovered services"
+            }
+        else:
+            # No clear next step, conclude
             return {
                 "tool": "none",
-                "parameters": [],
-                "reasoning": "Unable to parse LLM response",
-                "expected_outcome": "No action",
-                "raw_response": response
+                "parameters": {},
+                "reasoning": "Fallback: No clear attack vectors identified in reconnaissance",
+                "expected_outcome": "Assessment complete"
             }
     
     def generate_recommendations(self, all_results: List[Dict]) -> Dict[str, Any]:
@@ -565,9 +643,20 @@ class LLMOrchestrator:
         # Clean up summary
         combined["executive_summary"] = combined["executive_summary"].strip()
         
-        # Deduplicate lists
-        combined["exploitable"] = list(set(combined["exploitable"]))
-        combined["remediation"] = list(set(combined["remediation"]))
+        # Deduplicate lists (handle both strings and dicts safely)
+        # For exploitable, keep only unique items
+        seen_exploitable = []
+        for item in combined["exploitable"]:
+            if item not in seen_exploitable:
+                seen_exploitable.append(item)
+        combined["exploitable"] = seen_exploitable
+        
+        # For remediation, keep only unique items
+        seen_remediation = []
+        for item in combined["remediation"]:
+            if item not in seen_remediation:
+                seen_remediation.append(item)
+        combined["remediation"] = seen_remediation
         
         logger.info(f"Combined {len(chunk_responses)} chunk responses")
         return combined

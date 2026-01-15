@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SEC-AI - Autonomous Pentesting Platform
+EsecAi - AI-Powered Security Testing Platform
 Main Entry Point
 """
 import sys
@@ -76,7 +76,7 @@ def run_cli(args):
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description="SEC-AI - Autonomous Pentesting Platform"
+        description="EsecAi - AI-Powered Security Testing Platform"
     )
     
     parser.add_argument(

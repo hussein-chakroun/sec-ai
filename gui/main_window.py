@@ -50,8 +50,153 @@ class MainWindow(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("SEC-AI - Autonomous Pentesting Platform (Phases 1-12)")
+        self.setWindowTitle("EsecAi - AI-Powered Security Testing Platform")
         self.setGeometry(100, 100, 1400, 900)
+        self.setMinimumSize(1200, 700)  # Set minimum size
+        
+        # Apply cybersecurity-themed stylesheet
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #0d1117;
+            }
+            QWidget {
+                background-color: #0d1117;
+                color: #c9d1d9;
+            }
+            QGroupBox {
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                margin-top: 6px;
+                padding-top: 10px;
+                background-color: #161b22;
+                color: #58a6ff;
+                font-weight: bold;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+            QPushButton {
+                background-color: #21262d;
+                color: #c9d1d9;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #30363d;
+                border-color: #58a6ff;
+            }
+            QPushButton:pressed {
+                background-color: #161b22;
+            }
+            QLineEdit, QSpinBox, QComboBox {
+                background-color: #0d1117;
+                color: #c9d1d9;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                padding: 6px;
+                selection-background-color: #1f6feb;
+            }
+            QLineEdit:focus, QSpinBox:focus, QComboBox:focus {
+                border-color: #58a6ff;
+            }
+            QTextEdit {
+                background-color: #0d1117;
+                color: #c9d1d9;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                selection-background-color: #1f6feb;
+            }
+            QTabWidget::pane {
+                border: 1px solid #30363d;
+                background-color: #161b22;
+                border-radius: 6px;
+            }
+            QTabBar::tab {
+                background-color: #21262d;
+                color: #8b949e;
+                border: 1px solid #30363d;
+                border-bottom: none;
+                padding: 8px 16px;
+                margin-right: 2px;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+            }
+            QTabBar::tab:selected {
+                background-color: #161b22;
+                color: #58a6ff;
+                border-bottom: 2px solid #58a6ff;
+            }
+            QTabBar::tab:hover {
+                background-color: #30363d;
+                color: #c9d1d9;
+            }
+            QCheckBox {
+                color: #c9d1d9;
+                spacing: 8px;
+            }
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+                border: 1px solid #30363d;
+                border-radius: 3px;
+                background-color: #0d1117;
+            }
+            QCheckBox::indicator:checked {
+                background-color: #238636;
+                border-color: #2ea043;
+            }
+            QProgressBar {
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                background-color: #0d1117;
+                text-align: center;
+                color: #c9d1d9;
+            }
+            QProgressBar::chunk {
+                background-color: #1f6feb;
+                border-radius: 5px;
+            }
+            QTreeWidget, QListWidget {
+                background-color: #0d1117;
+                color: #c9d1d9;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                selection-background-color: #1f6feb;
+            }
+            QTreeWidget::item:hover, QListWidget::item:hover {
+                background-color: #21262d;
+            }
+            QScrollBar:vertical {
+                background-color: #0d1117;
+                width: 12px;
+                border: none;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #30363d;
+                border-radius: 6px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: #484f58;
+            }
+            QScrollBar:horizontal {
+                background-color: #0d1117;
+                height: 12px;
+                border: none;
+            }
+            QScrollBar::handle:horizontal {
+                background-color: #30363d;
+                border-radius: 6px;
+                min-width: 20px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background-color: #484f58;
+            }
+        """)
         
         self.pentest_engine = None
         self.worker = None
@@ -78,25 +223,43 @@ class MainWindow(QMainWindow):
     
     def init_ui(self):
         """Initialize UI components"""
+        from PyQt5.QtWidgets import QScrollArea
+        
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         
+        # Main container layout
+        container_layout = QVBoxLayout()
+        central_widget.setLayout(container_layout)
+        
+        # Create scroll area for main content
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        container_layout.addWidget(scroll_area)
+        
+        # Content widget inside scroll area
+        content_widget = QWidget()
+        scroll_area.setWidget(content_widget)
+        
         main_layout = QVBoxLayout()
-        central_widget.setLayout(main_layout)
+        content_widget.setLayout(main_layout)
         
         # Title
-        title = QLabel("🔐 SEC-AI Autonomous Pentesting Platform (Phases 1-12)")
+        title = QLabel("⚡ EsecAi")
         title_font = QFont()
-        title_font.setPointSize(18)
+        title_font.setPointSize(24)
         title_font.setBold(True)
         title.setFont(title_font)
         title.setAlignment(Qt.AlignCenter)
+        title.setStyleSheet("color: #58a6ff; margin: 10px; letter-spacing: 2px;")
         main_layout.addWidget(title)
         
         # Subtitle
-        subtitle = QLabel("AI-Powered Security Testing: Reconnaissance → Exploitation → Evasion → Impact → Adversary Simulation → IoT → Adaptive AI")
+        subtitle = QLabel("AI-Powered Autonomous Security Testing Platform")
         subtitle.setAlignment(Qt.AlignCenter)
-        subtitle.setStyleSheet("color: #7f8c8d; font-size: 12px;")
+        subtitle.setStyleSheet("color: #8b949e; font-size: 13px; margin-bottom: 10px;")
         main_layout.addWidget(subtitle)
         
         # Tabs
@@ -174,9 +337,11 @@ class MainWindow(QMainWindow):
         
         iterations_layout = QHBoxLayout()
         iterations_layout.addWidget(QLabel("Max Iterations:"))
-        self.iterations_input = QComboBox()
-        self.iterations_input.addItems(["5", "10", "15", "20", "30"])
-        self.iterations_input.setCurrentText("10")
+        self.iterations_input = QSpinBox()
+        self.iterations_input.setMinimum(1)
+        self.iterations_input.setMaximum(100)
+        self.iterations_input.setValue(10)
+        self.iterations_input.setToolTip("Number of autonomous scanning iterations (1-100)")
         iterations_layout.addWidget(self.iterations_input)
         advanced_layout.addLayout(iterations_layout)
         
@@ -238,19 +403,58 @@ class MainWindow(QMainWindow):
         
         self.start_button = QPushButton("🚀 Start Pentest")
         self.start_button.clicked.connect(self.start_pentest)
-        self.start_button.setStyleSheet("background-color: #27ae60; color: white; padding: 10px; font-size: 14px;")
+        self.start_button.setStyleSheet("""
+            QPushButton {
+                background-color: #238636;
+                color: white;
+                padding: 10px;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #2ea043;
+            }
+            QPushButton:hover {
+                background-color: #2ea043;
+                border-color: #3fb950;
+            }
+        """)
         button_layout.addWidget(self.start_button)
         
         self.stop_button = QPushButton("⛔ Stop")
         self.stop_button.clicked.connect(self.stop_pentest)
         self.stop_button.setEnabled(False)
-        self.stop_button.setStyleSheet("background-color: #e74c3c; color: white; padding: 10px; font-size: 14px;")
+        self.stop_button.setStyleSheet("""
+            QPushButton {
+                background-color: #da3633;
+                color: white;
+                padding: 10px;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #f85149;
+            }
+            QPushButton:hover {
+                background-color: #f85149;
+                border-color: #ff7b72;
+            }
+        """)
         button_layout.addWidget(self.stop_button)
         
         self.export_button = QPushButton("📄 Export Report")
         self.export_button.clicked.connect(self.export_report)
         self.export_button.setEnabled(False)
-        self.export_button.setStyleSheet("background-color: #3498db; color: white; padding: 10px; font-size: 14px;")
+        self.export_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6feb;
+                color: white;
+                padding: 10px;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #58a6ff;
+            }
+            QPushButton:hover {
+                background-color: #58a6ff;
+                border-color: #79c0ff;
+            }
+        """)
         button_layout.addWidget(self.export_button)
         
         layout.addLayout(button_layout)
@@ -268,7 +472,14 @@ class MainWindow(QMainWindow):
         
         self.output_text = QTextEdit()
         self.output_text.setReadOnly(True)
-        self.output_text.setStyleSheet("background-color: #2c3e50; color: #ecf0f1; font-family: monospace;")
+        self.output_text.setStyleSheet("""
+            background-color: #010409;
+            color: #7ee787;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
         output_layout.addWidget(self.output_text)
         
         layout.addWidget(output_group)
@@ -313,7 +524,7 @@ class MainWindow(QMainWindow):
             phase_layout.addWidget(checkbox)
             
             desc_label = QLabel(phase_desc)
-            desc_label.setStyleSheet("color: #7f8c8d; font-size: 10px; margin-left: 20px;")
+            desc_label.setStyleSheet("color: #8b949e; font-size: 10px; margin-left: 20px;")
             phase_layout.addWidget(desc_label)
             
             layout.addWidget(phase_widget)
@@ -434,7 +645,17 @@ class MainWindow(QMainWindow):
         # Test button
         test_btn = QPushButton("🧪 Test Exfiltration (SIMULATION ONLY)")
         test_btn.clicked.connect(self.test_exfiltration)
-        test_btn.setStyleSheet("background-color: #f39c12; color: white; padding: 8px;")
+        test_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #9e6a03;
+                color: white;
+                padding: 10px;
+                border: 1px solid #d4a72c;
+            }
+            QPushButton:hover {
+                background-color: #d4a72c;
+            }
+        """)
         layout.addWidget(test_btn)
         
         # Results
@@ -502,7 +723,17 @@ class MainWindow(QMainWindow):
         # Calculate button
         calc_btn = QPushButton("💰 Calculate Impact")
         calc_btn.clicked.connect(self.calculate_impact)
-        calc_btn.setStyleSheet("background-color: #e74c3c; color: white; padding: 10px;")
+        calc_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #da3633;
+                color: white;
+                padding: 10px;
+                border: 1px solid #f85149;
+            }
+            QPushButton:hover {
+                background-color: #f85149;
+            }
+        """)
         layout.addWidget(calc_btn)
         
         # Results
@@ -551,7 +782,17 @@ class MainWindow(QMainWindow):
         # Analyze button
         analyze_btn = QPushButton("📋 Analyze Compliance")
         analyze_btn.clicked.connect(self.analyze_compliance)
-        analyze_btn.setStyleSheet("background-color: #3498db; color: white; padding: 10px;")
+        analyze_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6feb;
+                color: white;
+                padding: 10px;
+                border: 1px solid #58a6ff;
+            }
+            QPushButton:hover {
+                background-color: #58a6ff;
+            }
+        """)
         layout.addWidget(analyze_btn)
         
         # Results
@@ -581,9 +822,12 @@ class MainWindow(QMainWindow):
         provider_layout = QHBoxLayout()
         provider_layout.addWidget(QLabel("Provider:"))
         self.provider_combo = QComboBox()
-        self.provider_combo.addItems(["openai", "anthropic", "lmstudio"])
-        self.provider_combo.setCurrentText(config.llm_provider)
-        self.provider_combo.currentTextChanged.connect(self.on_provider_changed)
+        self.provider_combo.addItems(["lmstudio", "openai", "anthropic"])
+        # Default to lmstudio
+        if hasattr(config, 'llm_provider') and config.llm_provider in ["lmstudio", "openai", "anthropic"]:
+            self.provider_combo.setCurrentText(config.llm_provider)
+        else:
+            self.provider_combo.setCurrentText("lmstudio")
         provider_layout.addWidget(self.provider_combo)
         llm_layout.addLayout(provider_layout)
         
@@ -616,7 +860,7 @@ class MainWindow(QMainWindow):
         test_conn_layout.addWidget(self.test_lmstudio_btn)
         
         self.lmstudio_status_label = QLabel("Status: Not connected")
-        self.lmstudio_status_label.setStyleSheet("color: #95a5a6;")
+        self.lmstudio_status_label.setStyleSheet("color: #8b949e;")
         test_conn_layout.addWidget(self.lmstudio_status_label)
         test_conn_layout.addStretch()
         lmstudio_layout.addLayout(test_conn_layout)
@@ -624,7 +868,7 @@ class MainWindow(QMainWindow):
         # Help text
         help_text = QLabel("💡 Tip: Start LM Studio server first, then load a model. The server runs on port 1234 by default.")
         help_text.setWordWrap(True)
-        help_text.setStyleSheet("color: #7f8c8d; font-size: 10px; padding: 5px;")
+        help_text.setStyleSheet("color: #8b949e; font-size: 10px; padding: 5px;")
         lmstudio_layout.addWidget(help_text)
         
         llm_layout.addWidget(self.lmstudio_group)
@@ -651,6 +895,10 @@ class MainWindow(QMainWindow):
         standard_model_layout.addLayout(api_key_layout)
         
         llm_layout.addWidget(self.standard_model_group)
+        
+        # Connect provider changed signal and trigger initial UI update
+        self.provider_combo.currentTextChanged.connect(self.on_provider_changed)
+        self.on_provider_changed(self.provider_combo.currentText())
         
         # Low Context Mode Configuration
         low_context_group = QGroupBox("⚙️ Performance Settings")
@@ -687,7 +935,7 @@ class MainWindow(QMainWindow):
             "Typical settings: 2000 tokens for 8GB RAM, 1000 tokens for 4GB RAM."
         )
         low_context_info.setWordWrap(True)
-        low_context_info.setStyleSheet("color: #7f8c8d; font-size: 10px; padding: 5px; margin-top: 5px;")
+        low_context_info.setStyleSheet("color: #8b949e; font-size: 10px; padding: 5px; margin-top: 5px;")
         low_context_layout.addWidget(low_context_info)
         
         llm_layout.addWidget(low_context_group)
@@ -695,7 +943,18 @@ class MainWindow(QMainWindow):
         # Apply Configuration Button
         apply_config_btn = QPushButton("💾 Apply Configuration")
         apply_config_btn.clicked.connect(self.apply_llm_config)
-        apply_config_btn.setStyleSheet("background-color: #27ae60; color: white; padding: 8px; font-weight: bold;")
+        apply_config_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #238636;
+                color: white;
+                padding: 10px;
+                font-weight: bold;
+                border: 1px solid #2ea043;
+            }
+            QPushButton:hover {
+                background-color: #2ea043;
+            }
+        """)
         llm_layout.addWidget(apply_config_btn)
         
         layout.addWidget(llm_group)
@@ -726,7 +985,7 @@ class MainWindow(QMainWindow):
         
         info_label = QLabel("The following tools are required for full functionality. Missing tools can be installed automatically.")
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("color: #7f8c8d; margin-bottom: 10px;")
+        info_label.setStyleSheet("color: #8b949e; margin-bottom: 10px;")
         layout.addWidget(info_label)
         
         # Tools status group
@@ -751,7 +1010,18 @@ class MainWindow(QMainWindow):
         
         self.install_tools_button = QPushButton("📦 Install Missing Tools")
         self.install_tools_button.clicked.connect(self.install_missing_tools)
-        self.install_tools_button.setStyleSheet("background-color: #27ae60; color: white; padding: 8px; font-weight: bold;")
+        self.install_tools_button.setStyleSheet("""
+            QPushButton {
+                background-color: #238636;
+                color: white;
+                padding: 10px;
+                font-weight: bold;
+                border: 1px solid #2ea043;
+            }
+            QPushButton:hover {
+                background-color: #2ea043;
+            }
+        """)
         button_layout.addWidget(self.install_tools_button)
         
         button_layout.addStretch()
@@ -765,7 +1035,13 @@ class MainWindow(QMainWindow):
         
         self.install_log_text = QTextEdit()
         self.install_log_text.setReadOnly(True)
-        self.install_log_text.setStyleSheet("background-color: #2c3e50; color: #ecf0f1; font-family: monospace;")
+        self.install_log_text.setStyleSheet("""
+            background-color: #010409;
+            color: #7ee787;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            border: 1px solid #30363d;
+        """)
         self.install_log_text.setMaximumHeight(150)
         log_layout.addWidget(self.install_log_text)
         
@@ -979,7 +1255,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", "Engine not initialized. Please configure API key.")
             return
         
-        max_iterations = int(self.iterations_input.currentText())
+        max_iterations = self.iterations_input.value()
         
         # Confirm
         reply = QMessageBox.question(
@@ -1105,7 +1381,7 @@ class MainWindow(QMainWindow):
             return
         
         self.lmstudio_status_label.setText("Status: Testing connection...")
-        self.lmstudio_status_label.setStyleSheet("color: #f39c12;")
+        self.lmstudio_status_label.setStyleSheet("color: #d4a72c;")
         QApplication.processEvents()
         
         try:
@@ -1121,7 +1397,7 @@ class MainWindow(QMainWindow):
                 if models:
                     model_names = [m.get('id', 'unknown') for m in models]
                     self.lmstudio_status_label.setText(f"Status: ✅ Connected ({len(models)} model(s) available)")
-                    self.lmstudio_status_label.setStyleSheet("color: #27ae60; font-weight: bold;")
+                    self.lmstudio_status_label.setStyleSheet("color: #3fb950; font-weight: bold;")
                     
                     # Update model input with first available model
                     if self.lmstudio_model_input.text().strip() == "":
@@ -1134,7 +1410,7 @@ class MainWindow(QMainWindow):
                     )
                 else:
                     self.lmstudio_status_label.setText("Status: ⚠️ Connected but no models loaded")
-                    self.lmstudio_status_label.setStyleSheet("color: #f39c12;")
+                    self.lmstudio_status_label.setStyleSheet("color: #d4a72c;")
                     QMessageBox.warning(
                         self,
                         "No Models",
@@ -1142,12 +1418,12 @@ class MainWindow(QMainWindow):
                     )
             else:
                 self.lmstudio_status_label.setText(f"Status: ❌ Connection failed (HTTP {response.status_code})")
-                self.lmstudio_status_label.setStyleSheet("color: #e74c3c;")
+                self.lmstudio_status_label.setStyleSheet("color: #f85149;")
                 QMessageBox.critical(self, "Connection Failed", f"HTTP {response.status_code}: {response.text}")
                 
         except requests.exceptions.ConnectionError:
             self.lmstudio_status_label.setText("Status: ❌ Cannot connect")
-            self.lmstudio_status_label.setStyleSheet("color: #e74c3c;")
+            self.lmstudio_status_label.setStyleSheet("color: #f85149;")
             QMessageBox.critical(
                 self,
                 "Connection Failed",
@@ -1155,7 +1431,7 @@ class MainWindow(QMainWindow):
             )
         except Exception as e:
             self.lmstudio_status_label.setText(f"Status: ❌ Error")
-            self.lmstudio_status_label.setStyleSheet("color: #e74c3c;")
+            self.lmstudio_status_label.setStyleSheet("color: #f85149;")
             QMessageBox.critical(self, "Error", f"Test failed: {str(e)}")
     
     def apply_llm_config(self):
