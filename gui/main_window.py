@@ -3,6 +3,7 @@ Main GUI Application for Autonomous Penetration Testing Platform
 Supports Phases 1-12: Full-Spectrum AI-Powered Security Testing
 """
 import sys
+from typing import Dict, Any
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLineEdit, QTextEdit, QLabel, QComboBox, 
@@ -201,6 +202,7 @@ class MainWindow(QMainWindow):
         self.pentest_engine = None
         self.worker = None
         self.current_results = None
+        self.current_recon_results = None
         
         # Phase selections
         self.enabled_phases = {
@@ -278,9 +280,13 @@ class MainWindow(QMainWindow):
         config_tab = self.create_config_tab()
         tabs.addTab(config_tab, "🔧 Configuration")
         
-        # Tab 4: Data Discovery (Phase 8)
+        # Tab 4: Phase 1 Reconnaissance
+        recon_tab = self.create_reconnaissance_tab()
+        tabs.addTab(recon_tab, "🔍 Phase 1: Recon")
+        
+        # Tab 5: Data Discovery (Phase 8)
         discovery_tab = self.create_discovery_tab()
-        tabs.addTab(discovery_tab, "🔍 Data Discovery")
+        tabs.addTab(discovery_tab, "📊 Data Discovery")
         
         # Tab 5: Exfiltration (Phase 8)
         exfil_tab = self.create_exfiltration_tab()
@@ -969,6 +975,507 @@ class MainWindow(QMainWindow):
         layout.addWidget(scan_group)
         
         layout.addStretch()
+        
+        return widget
+    
+    def create_reconnaissance_tab(self):
+        """Create Phase 1 Reconnaissance tab with tool selection"""
+        widget = QWidget()
+        layout = QVBoxLayout()
+        widget.setLayout(layout)
+        
+        # Title and description
+        title_label = QLabel("Phase 1: Reconnaissance & Information Gathering")
+        title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #58a6ff; margin-bottom: 5px;")
+        layout.addWidget(title_label)
+        
+        desc_label = QLabel("Perform comprehensive reconnaissance with customizable tools and scanning modes")
+        desc_label.setStyleSheet("color: #8b949e; font-size: 11px; margin-bottom: 10px;")
+        layout.addWidget(desc_label)
+        
+        # Target Configuration
+        target_group = QGroupBox("🎯 Target Configuration")
+        target_layout = QVBoxLayout()
+        target_group.setLayout(target_layout)
+        
+        target_input_layout = QHBoxLayout()
+        target_input_layout.addWidget(QLabel("Target:"))
+        self.recon_target_input = QLineEdit()
+        self.recon_target_input.setPlaceholderText("example.com, 192.168.1.1, or 10.0.0.0/24")
+        target_input_layout.addWidget(self.recon_target_input)
+        target_layout.addLayout(target_input_layout)
+        
+        layout.addWidget(target_group)
+        
+        # Scanning Mode Selection
+        mode_group = QGroupBox("⚡ Scanning Mode")
+        mode_layout = QVBoxLayout()
+        mode_group.setLayout(mode_layout)
+        
+        mode_desc = QLabel("Choose scanning speed and depth:")
+        mode_desc.setStyleSheet("color: #8b949e; font-size: 10px; margin-bottom: 5px;")
+        mode_layout.addWidget(mode_desc)
+        
+        self.recon_mode_combo = QComboBox()
+        self.recon_mode_combo.addItems([
+            "Quick Scan - Fast reconnaissance (Top 100 ports, basic info)",
+            "Balanced Scan - Moderate depth (Top 1000 ports, service detection)",
+            "Deep Scan - Comprehensive analysis (All ports, OS detection, full enumeration)",
+            "Stealth Scan - Slow & evasive (IDS/firewall avoidance techniques)"
+        ])
+        self.recon_mode_combo.setCurrentIndex(1)  # Default to balanced
+        mode_layout.addWidget(self.recon_mode_combo)
+        
+        layout.addWidget(mode_group)
+        
+        # Tool Selection
+        tools_group = QGroupBox("🛠️ Reconnaissance Tools")
+        tools_layout = QVBoxLayout()
+        tools_group.setLayout(tools_layout)
+        
+        tools_desc = QLabel("Select which reconnaissance tools to use:")
+        tools_desc.setStyleSheet("color: #8b949e; font-size: 10px; margin-bottom: 5px;")
+        tools_layout.addWidget(tools_desc)
+        
+        # Create checkboxes for each tool
+        self.recon_tool_checkboxes = {}
+        
+        tool_options = [
+            ('nmap', '🌐 Nmap - Port scanning and service detection', True),
+            ('dns', '📋 DNS Reconnaissance - DNS enumeration and zone transfers', True),
+            ('whois', '🔍 WHOIS Lookup - Domain registration information', True),
+            ('subdomain', '🌳 Subdomain Enumeration - Discover subdomains', True),
+            ('service', '⚙️ Service Enumeration - Detailed service version detection', True),
+            ('os', '💻 OS Detection - Operating system fingerprinting', False),
+        ]
+        
+        # Create two columns for tools
+        tools_grid_layout = QHBoxLayout()
+        left_col = QVBoxLayout()
+        right_col = QVBoxLayout()
+        
+        for i, (tool_id, tool_label, default_checked) in enumerate(tool_options):
+            checkbox = QCheckBox(tool_label)
+            checkbox.setChecked(default_checked)
+            self.recon_tool_checkboxes[tool_id] = checkbox
+            
+            if i < 3:
+                left_col.addWidget(checkbox)
+            else:
+                right_col.addWidget(checkbox)
+        
+        tools_grid_layout.addLayout(left_col)
+        tools_grid_layout.addLayout(right_col)
+        tools_layout.addLayout(tools_grid_layout)
+        
+        # Quick selection buttons
+        quick_select_layout = QHBoxLayout()
+        
+        all_tools_btn = QPushButton("✅ Select All")
+        all_tools_btn.clicked.connect(lambda: self.toggle_recon_tools(True))
+        all_tools_btn.setStyleSheet("padding: 5px;")
+        quick_select_layout.addWidget(all_tools_btn)
+        
+        none_tools_btn = QPushButton("❌ Deselect All")
+        none_tools_btn.clicked.connect(lambda: self.toggle_recon_tools(False))
+        none_tools_btn.setStyleSheet("padding: 5px;")
+        quick_select_layout.addWidget(none_tools_btn)
+        
+        essential_tools_btn = QPushButton("⭐ Essential Only")
+        essential_tools_btn.clicked.connect(self.select_essential_recon_tools)
+        essential_tools_btn.setStyleSheet("padding: 5px;")
+        quick_select_layout.addWidget(essential_tools_btn)
+        
+        quick_select_layout.addStretch()
+        tools_layout.addLayout(quick_select_layout)
+        
+        layout.addWidget(tools_group)
+        
+        # Control Buttons
+        control_layout = QHBoxLayout()
+        
+        self.start_recon_button = QPushButton("🚀 Start Reconnaissance")
+        self.start_recon_button.clicked.connect(self.start_reconnaissance)
+        self.start_recon_button.setStyleSheet("""
+            QPushButton {
+                background-color: #238636;
+                color: white;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #2ea043;
+            }
+            QPushButton:hover {
+                background-color: #2ea043;
+                border-color: #3fb950;
+            }
+        """)
+        control_layout.addWidget(self.start_recon_button)
+        
+        self.start_orchestrated_button = QPushButton("🎯 Orchestrated Phase 1")
+        self.start_orchestrated_button.clicked.connect(self.start_orchestrated_phase1)
+        self.start_orchestrated_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6feb;
+                color: white;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #388bfd;
+            }
+            QPushButton:hover {
+                background-color: #388bfd;
+                border-color: #58a6ff;
+            }
+        """)
+        control_layout.addWidget(self.start_orchestrated_button)
+        
+        self.stop_recon_button = QPushButton("⛔ Stop")
+        self.stop_recon_button.clicked.connect(self.stop_reconnaissance)
+        self.stop_recon_button.setEnabled(False)
+        self.stop_recon_button.setStyleSheet("""
+            QPushButton {
+                background-color: #da3633;
+                color: white;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #f85149;
+            }
+            QPushButton:hover {
+                background-color: #f85149;
+                border-color: #ff7b72;
+            }
+        """)
+        control_layout.addWidget(self.stop_recon_button)
+        
+        self.export_recon_button = QPushButton("📄 Export Results")
+        self.export_recon_button.clicked.connect(self.export_recon_results)
+        self.export_recon_button.setEnabled(False)
+        self.export_recon_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6feb;
+                color: white;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #58a6ff;
+            }
+            QPushButton:hover {
+                background-color: #58a6ff;
+                border-color: #79c0ff;
+            }
+        """)
+        control_layout.addWidget(self.export_recon_button)
+        
+        layout.addLayout(control_layout)
+        
+        # Progress bar
+        self.recon_progress_bar = QProgressBar()
+        self.recon_progress_bar.setRange(0, 0)  # Indeterminate
+        self.recon_progress_bar.hide()
+        layout.addWidget(self.recon_progress_bar)
+        
+        # Results Display
+        results_group = QGroupBox("📊 Reconnaissance Results")
+        results_layout = QVBoxLayout()
+        results_group.setLayout(results_layout)
+        
+        # Results tabs for different views
+        results_tabs = QTabWidget()
+        
+        # Summary view
+        self.recon_summary_text = QTextEdit()
+        self.recon_summary_text.setReadOnly(True)
+        self.recon_summary_text.setStyleSheet("""
+            background-color: #010409;
+            color: #7ee787;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        results_tabs.addTab(self.recon_summary_text, "📋 Summary")
+        
+        # Detailed view
+        self.recon_detailed_text = QTextEdit()
+        self.recon_detailed_text.setReadOnly(True)
+        self.recon_detailed_text.setStyleSheet("""
+            background-color: #010409;
+            color: #7ee787;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        results_tabs.addTab(self.recon_detailed_text, "🔍 Detailed")
+        
+        # JSON view
+        self.recon_json_text = QTextEdit()
+        self.recon_json_text.setReadOnly(True)
+        self.recon_json_text.setStyleSheet("""
+            background-color: #010409;
+            color: #c9d1d9;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 10px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        results_tabs.addTab(self.recon_json_text, "{ } JSON")
+        
+        results_layout.addWidget(results_tabs)
+        layout.addWidget(results_group)
+        
+        # OSINT (Open Source Intelligence) Section
+        osint_group = QGroupBox("🕵️ Step 2: OSINT & Deep Analysis")
+        osint_layout = QVBoxLayout()
+        osint_group.setLayout(osint_layout)
+        
+        osint_desc = QLabel("Advanced OSINT tools for deep investigation, breach checking, and vulnerability analysis")
+        osint_desc.setStyleSheet("color: #8b949e; font-size: 10px; margin-bottom: 10px;")
+        osint_layout.addWidget(osint_desc)
+        
+        # Web Crawler Section
+        crawler_section = QGroupBox("🌐 Website Crawling & Analysis")
+        crawler_layout = QVBoxLayout()
+        crawler_section.setLayout(crawler_layout)
+        
+        crawler_options_layout = QHBoxLayout()
+        self.enable_crawler_checkbox = QCheckBox("Enable Web Crawler")
+        self.enable_crawler_checkbox.setChecked(True)
+        self.enable_crawler_checkbox.setToolTip("Crawl website to extract emails, forms, technologies, and vulnerabilities")
+        crawler_options_layout.addWidget(self.enable_crawler_checkbox)
+        
+        crawler_options_layout.addWidget(QLabel("Max Depth:"))
+        self.crawler_depth_spinner = QSpinBox()
+        self.crawler_depth_spinner.setMinimum(1)
+        self.crawler_depth_spinner.setMaximum(10)
+        self.crawler_depth_spinner.setValue(3)
+        self.crawler_depth_spinner.setToolTip("How deep to crawl (3 = 3 levels of links)")
+        crawler_options_layout.addWidget(self.crawler_depth_spinner)
+        
+        crawler_options_layout.addWidget(QLabel("Max Pages:"))
+        self.crawler_pages_spinner = QSpinBox()
+        self.crawler_pages_spinner.setMinimum(10)
+        self.crawler_pages_spinner.setMaximum(500)
+        self.crawler_pages_spinner.setValue(50)
+        self.crawler_pages_spinner.setToolTip("Maximum pages to crawl")
+        crawler_options_layout.addWidget(self.crawler_pages_spinner)
+        
+        crawler_options_layout.addStretch()
+        crawler_layout.addLayout(crawler_options_layout)
+        
+        osint_layout.addWidget(crawler_section)
+        
+        # OSINT Tools Selection
+        tools_section = QGroupBox("🛠️ OSINT Tools (Optional)")
+        tools_section_layout = QVBoxLayout()
+        tools_section.setLayout(tools_section_layout)
+        
+        tools_info = QLabel("Select OSINT tools to use. API keys may be required for some services.")
+        tools_info.setStyleSheet("color: #8b949e; font-size: 10px;")
+        tools_section_layout.addWidget(tools_info)
+        
+        # Create OSINT tool checkboxes
+        self.osint_tool_checkboxes = {}
+        
+        osint_tools_grid = QHBoxLayout()
+        left_osint_col = QVBoxLayout()
+        right_osint_col = QVBoxLayout()
+        
+        osint_tool_options = [
+            ('haveibeenpwned', '🔒 Have I Been Pwned - Check emails for breaches', True),
+            ('spiderfoot', '🕷️ SpiderFoot - Automated OSINT gathering', False),
+            ('intelx', '🌐 Intelligence X - Deep/dark web search', False),
+            ('maltego', '🗺️ Maltego - Visual link analysis', False),
+            ('osint_framework', '📚 OSINT Framework - Tool recommendations', True),
+            ('llm_analysis', '🤖 LLM Analysis - AI-powered threat assessment', True),
+        ]
+        
+        for i, (tool_id, tool_label, default_checked) in enumerate(osint_tool_options):
+            checkbox = QCheckBox(tool_label)
+            checkbox.setChecked(default_checked)
+            self.osint_tool_checkboxes[tool_id] = checkbox
+            
+            if i < 3:
+                left_osint_col.addWidget(checkbox)
+            else:
+                right_osint_col.addWidget(checkbox)
+        
+        osint_tools_grid.addLayout(left_osint_col)
+        osint_tools_grid.addLayout(right_osint_col)
+        tools_section_layout.addLayout(osint_tools_grid)
+        
+        osint_layout.addWidget(tools_section)
+        
+        # API Keys Configuration
+        api_keys_section = QGroupBox("🔑 API Keys (Optional)")
+        api_keys_layout = QVBoxLayout()
+        api_keys_section.setLayout(api_keys_layout)
+        
+        # Have I Been Pwned API
+        hibp_layout = QHBoxLayout()
+        hibp_layout.addWidget(QLabel("HIBP API Key:"))
+        self.hibp_api_key_input = QLineEdit()
+        self.hibp_api_key_input.setPlaceholderText("Optional - for enhanced breach checking")
+        self.hibp_api_key_input.setEchoMode(QLineEdit.Password)
+        hibp_layout.addWidget(self.hibp_api_key_input)
+        api_keys_layout.addLayout(hibp_layout)
+        
+        # Intelligence X API
+        intelx_layout = QHBoxLayout()
+        intelx_layout.addWidget(QLabel("IntelX API Key:"))
+        self.intelx_api_key_input = QLineEdit()
+        self.intelx_api_key_input.setPlaceholderText("Required for Intelligence X searches")
+        self.intelx_api_key_input.setEchoMode(QLineEdit.Password)
+        intelx_layout.addWidget(self.intelx_api_key_input)
+        api_keys_layout.addLayout(intelx_layout)
+        
+        api_keys_note = QLabel("💡 Tip: Get API keys from haveibeenpwned.com and intelx.io")
+        api_keys_note.setStyleSheet("color: #8b949e; font-size: 9px; font-style: italic;")
+        api_keys_layout.addWidget(api_keys_note)
+        
+        osint_layout.addWidget(api_keys_section)
+        
+        # OSINT Control Buttons
+        osint_control_layout = QHBoxLayout()
+        
+        self.start_osint_button = QPushButton("🕵️ Start OSINT Investigation")
+        self.start_osint_button.clicked.connect(self.start_osint_investigation)
+        self.start_osint_button.setStyleSheet("""
+            QPushButton {
+                background-color: #6f42c1;
+                color: white;
+                padding: 10px;
+                font-size: 13px;
+                font-weight: bold;
+                border: 1px solid #8a63d2;
+            }
+            QPushButton:hover {
+                background-color: #8a63d2;
+                border-color: #9f7aea;
+            }
+        """)
+        osint_control_layout.addWidget(self.start_osint_button)
+        
+        self.stop_osint_button = QPushButton("⛔ Stop OSINT")
+        self.stop_osint_button.clicked.connect(self.stop_osint_investigation)
+        self.stop_osint_button.setEnabled(False)
+        self.stop_osint_button.setStyleSheet("""
+            QPushButton {
+                background-color: #da3633;
+                color: white;
+                padding: 10px;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #f85149;
+            }
+        """)
+        osint_control_layout.addWidget(self.stop_osint_button)
+        
+        self.export_osint_button = QPushButton("📄 Export OSINT Report")
+        self.export_osint_button.clicked.connect(self.export_osint_results)
+        self.export_osint_button.setEnabled(False)
+        self.export_osint_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6feb;
+                color: white;
+                padding: 10px;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #58a6ff;
+            }
+        """)
+        osint_control_layout.addWidget(self.export_osint_button)
+        
+        osint_layout.addLayout(osint_control_layout)
+        
+        # OSINT Progress
+        self.osint_progress_bar = QProgressBar()
+        self.osint_progress_bar.setRange(0, 0)
+        self.osint_progress_bar.hide()
+        osint_layout.addWidget(self.osint_progress_bar)
+        
+        # OSINT Results
+        osint_results_group = QGroupBox("🔍 OSINT Results & Analysis")
+        osint_results_layout = QVBoxLayout()
+        osint_results_group.setLayout(osint_results_layout)
+        
+        osint_results_tabs = QTabWidget()
+        
+        # OSINT Summary
+        self.osint_summary_text = QTextEdit()
+        self.osint_summary_text.setReadOnly(True)
+        self.osint_summary_text.setStyleSheet("""
+            background-color: #010409;
+            color: #7ee787;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        osint_results_tabs.addTab(self.osint_summary_text, "📋 Summary")
+        
+        # Crawl Results
+        self.osint_crawl_text = QTextEdit()
+        self.osint_crawl_text.setReadOnly(True)
+        self.osint_crawl_text.setStyleSheet("""
+            background-color: #010409;
+            color: #58a6ff;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        osint_results_tabs.addTab(self.osint_crawl_text, "🌐 Web Crawl")
+        
+        # Breach Data
+        self.osint_breach_text = QTextEdit()
+        self.osint_breach_text.setReadOnly(True)
+        self.osint_breach_text.setStyleSheet("""
+            background-color: #010409;
+            color: #f85149;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        osint_results_tabs.addTab(self.osint_breach_text, "🔒 Breaches")
+        
+        # LLM Analysis
+        self.osint_llm_text = QTextEdit()
+        self.osint_llm_text.setReadOnly(True)
+        self.osint_llm_text.setStyleSheet("""
+            background-color: #010409;
+            color: #d2a8ff;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        osint_results_tabs.addTab(self.osint_llm_text, "🤖 AI Analysis")
+        
+        # JSON Data
+        self.osint_json_text = QTextEdit()
+        self.osint_json_text.setReadOnly(True)
+        self.osint_json_text.setStyleSheet("""
+            background-color: #010409;
+            color: #c9d1d9;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 10px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        osint_results_tabs.addTab(self.osint_json_text, "{ } JSON")
+        
+        osint_results_layout.addWidget(osint_results_tabs)
+        osint_layout.addWidget(osint_results_group)
+        
+        layout.addWidget(osint_group)
         
         return widget
     
@@ -2211,6 +2718,896 @@ class MainWindow(QMainWindow):
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Exploitation failed:\n{str(e)}")
+    
+    # Reconnaissance Tab Methods
+    
+    def toggle_recon_tools(self, checked: bool):
+        """Toggle all reconnaissance tools"""
+        for checkbox in self.recon_tool_checkboxes.values():
+            checkbox.setChecked(checked)
+    
+    def select_essential_recon_tools(self):
+        """Select only essential reconnaissance tools"""
+        essential = ['nmap', 'dns', 'whois']
+        for tool_id, checkbox in self.recon_tool_checkboxes.items():
+            checkbox.setChecked(tool_id in essential)
+    
+    def start_reconnaissance(self):
+        """Start reconnaissance scan"""
+        target = self.recon_target_input.text().strip()
+        
+        if not target:
+            QMessageBox.warning(self, "Input Required", "Please enter a target to scan")
+            return
+        
+        # Get selected mode
+        mode_index = self.recon_mode_combo.currentIndex()
+        mode_map = {
+            0: 'quick',
+            1: 'balanced',
+            2: 'deep',
+            3: 'stealth'
+        }
+        mode = mode_map.get(mode_index, 'balanced')
+        
+        # Get selected tools
+        selected_tools = [tool_id for tool_id, checkbox in self.recon_tool_checkboxes.items() 
+                         if checkbox.isChecked()]
+        
+        if not selected_tools:
+            QMessageBox.warning(self, "Tool Selection Required", "Please select at least one reconnaissance tool")
+            return
+        
+        # Update UI
+        self.start_recon_button.setEnabled(False)
+        self.stop_recon_button.setEnabled(True)
+        self.export_recon_button.setEnabled(False)
+        self.recon_progress_bar.show()
+        
+        # Clear previous results
+        self.recon_summary_text.clear()
+        self.recon_detailed_text.clear()
+        self.recon_json_text.clear()
+        
+        # Log start
+        self.recon_summary_text.append("=" * 80)
+        self.recon_summary_text.append(f"🚀 RECONNAISSANCE SCAN STARTED")
+        self.recon_summary_text.append("=" * 80)
+        self.recon_summary_text.append(f"Target: {target}")
+        self.recon_summary_text.append(f"Mode: {mode.upper()}")
+        self.recon_summary_text.append(f"Tools: {', '.join(selected_tools)}")
+        self.recon_summary_text.append("=" * 80 + "\n")
+        
+        # Run reconnaissance in background
+        try:
+            from modules.reconnaissance_suite import ReconnaissanceSuite
+            from PyQt5.QtCore import QThread, pyqtSignal
+            
+            class ReconWorker(QThread):
+                """Worker thread for reconnaissance"""
+                finished = pyqtSignal(dict)
+                error = pyqtSignal(str)
+                progress = pyqtSignal(str)
+                
+                def __init__(self, target, mode, tools):
+                    super().__init__()
+                    self.target = target
+                    self.mode = mode
+                    self.tools = tools
+                
+                def run(self):
+                    try:
+                        self.progress.emit(f"Initializing reconnaissance suite...")
+                        suite = ReconnaissanceSuite()
+                        
+                        self.progress.emit(f"Starting {self.mode} scan on {self.target}...")
+                        results = suite.perform_reconnaissance(self.target, self.mode, self.tools)
+                        
+                        self.finished.emit(results)
+                    except Exception as e:
+                        logger.error(f"Reconnaissance error: {e}")
+                        self.error.emit(str(e))
+            
+            # Create and start worker
+            self.recon_worker = ReconWorker(target, mode, selected_tools)
+            self.recon_worker.progress.connect(self.update_recon_progress)
+            self.recon_worker.finished.connect(self.recon_finished)
+            self.recon_worker.error.connect(self.recon_error)
+            self.recon_worker.start()
+            
+        except Exception as e:
+            logger.error(f"Failed to start reconnaissance: {e}")
+            self.recon_error(str(e))
+    
+    def update_recon_progress(self, message: str):
+        """Update reconnaissance progress"""
+        self.recon_summary_text.append(f"⏳ {message}")
+    
+    def recon_finished(self, results: Dict[str, Any]):
+        """Handle reconnaissance completion"""
+        try:
+            # Store results
+            self.current_recon_results = results
+            
+            # Update summary view
+            self.recon_summary_text.append("\n" + "=" * 80)
+            self.recon_summary_text.append("✅ RECONNAISSANCE COMPLETED")
+            self.recon_summary_text.append("=" * 80 + "\n")
+            
+            # Display summary
+            if 'summary' in results:
+                summary = results['summary']
+                self.recon_summary_text.append("📊 SUMMARY:")
+                self.recon_summary_text.append(f"  • Open Ports: {summary.get('open_ports_count', 0)}")
+                
+                services = summary.get('services_found', [])
+                if services:
+                    self.recon_summary_text.append(f"  • Services Found: {', '.join(set(services[:10]))}")
+                
+                subdomains_count = summary.get('subdomains_count', 0)
+                if subdomains_count:
+                    self.recon_summary_text.append(f"  • Subdomains: {subdomains_count}")
+                
+                os_detected = summary.get('os_detected')
+                if os_detected:
+                    self.recon_summary_text.append(f"  • OS Detected: {os_detected}")
+                
+                self.recon_summary_text.append("")
+            
+            # Display detailed results
+            self.recon_detailed_text.append("=" * 80)
+            self.recon_detailed_text.append("DETAILED RECONNAISSANCE RESULTS")
+            self.recon_detailed_text.append("=" * 80 + "\n")
+            
+            if 'results' in results:
+                for tool, tool_results in results['results'].items():
+                    self.recon_detailed_text.append(f"\n{'─' * 80}")
+                    self.recon_detailed_text.append(f"🛠️  {tool.upper()} RESULTS")
+                    self.recon_detailed_text.append('─' * 80)
+                    
+                    if 'raw_output' in tool_results:
+                        self.recon_detailed_text.append(tool_results['raw_output'][:2000])
+                    else:
+                        self.recon_detailed_text.append(str(tool_results))
+            
+            # Display JSON
+            import json
+            self.recon_json_text.setPlainText(json.dumps(results, indent=2))
+            
+            # Add recommendations
+            self.recon_summary_text.append("\n💡 RECOMMENDATIONS:")
+            if 'results' in results and 'ports' in results['results']:
+                open_ports = results['results']['ports'].get('open_ports', [])
+                if len(open_ports) > 10:
+                    self.recon_summary_text.append("  ⚠️  Large attack surface detected - many open ports")
+                
+                for port_info in open_ports[:5]:
+                    port = port_info.get('port')
+                    service = port_info.get('service', 'unknown')
+                    self.recon_summary_text.append(f"  • Port {port}/{service} - Investigate further")
+            
+            self.recon_summary_text.append("\n✅ Scan complete! Review the detailed results for more information.")
+            
+        except Exception as e:
+            logger.error(f"Error displaying results: {e}")
+            self.recon_summary_text.append(f"\n⚠️  Error displaying results: {e}")
+        
+        finally:
+            # Update UI
+            self.recon_progress_bar.hide()
+            self.start_recon_button.setEnabled(True)
+            self.stop_recon_button.setEnabled(False)
+            self.export_recon_button.setEnabled(True)
+    
+    def recon_error(self, error_msg: str):
+        """Handle reconnaissance error"""
+        self.recon_summary_text.append(f"\n❌ ERROR: {error_msg}")
+        self.recon_progress_bar.hide()
+        self.start_recon_button.setEnabled(True)
+        self.stop_recon_button.setEnabled(False)
+        QMessageBox.critical(self, "Reconnaissance Error", f"An error occurred:\n{error_msg}")
+    
+    def stop_reconnaissance(self):
+        """Stop reconnaissance scan"""
+        if hasattr(self, 'recon_worker') and self.recon_worker.isRunning():
+            self.recon_worker.terminate()
+            self.recon_worker.wait()
+            self.recon_summary_text.append("\n⛔ Scan stopped by user")
+            self.recon_progress_bar.hide()
+            self.start_recon_button.setEnabled(True)
+            self.start_orchestrated_button.setEnabled(True)
+            self.stop_recon_button.setEnabled(False)
+        
+        if hasattr(self, 'orchestrated_worker') and self.orchestrated_worker.isRunning():
+            self.orchestrated_worker.terminate()
+            self.orchestrated_worker.wait()
+            self.recon_summary_text.append("\n⛔ Orchestrated scan stopped by user")
+            self.recon_progress_bar.hide()
+            self.start_recon_button.setEnabled(True)
+            self.start_orchestrated_button.setEnabled(True)
+            self.stop_recon_button.setEnabled(False)
+    
+    def start_orchestrated_phase1(self):
+        """Start orchestrated Phase 1 reconnaissance with advanced features"""
+        target = self.recon_target_input.text().strip()
+        
+        if not target:
+            QMessageBox.warning(self, "Input Required", "Please enter a target to scan")
+            return
+        
+        # Get selected mode
+        mode_index = self.recon_mode_combo.currentIndex()
+        mode_map = {
+            0: 'quick',
+            1: 'balanced',
+            2: 'deep',
+            3: 'stealth'
+        }
+        mode = mode_map.get(mode_index, 'balanced')
+        
+        # Get selected reconnaissance tools
+        selected_recon_tools = [tool_id for tool_id, checkbox in self.recon_tool_checkboxes.items() 
+                               if checkbox.isChecked()]
+        
+        # Get selected OSINT tools
+        selected_osint_tools = []
+        for tool_id, checkbox in self.osint_tool_checkboxes.items():
+            if checkbox.isChecked():
+                selected_osint_tools.append(tool_id)
+        
+        if not selected_recon_tools and not selected_osint_tools:
+            QMessageBox.warning(self, "Tool Selection Required", 
+                              "Please select at least one reconnaissance or OSINT tool")
+            return
+        
+        # Get crawler configuration
+        crawler_config = None
+        if self.crawl_website_checkbox.isChecked():
+            crawler_config = {
+                'max_depth': self.crawl_depth_spinner.value(),
+                'max_pages': self.crawl_pages_spinner.value(),
+                'evasive': True  # Enable IDS/IPS evasion
+            }
+        
+        # Update UI
+        self.start_recon_button.setEnabled(False)
+        self.start_orchestrated_button.setEnabled(False)
+        self.stop_recon_button.setEnabled(True)
+        self.export_recon_button.setEnabled(False)
+        self.recon_progress_bar.show()
+        
+        # Clear previous results
+        self.recon_summary_text.clear()
+        self.recon_detailed_text.clear()
+        self.recon_json_text.clear()
+        
+        # Log start
+        self.recon_summary_text.append("=" * 80)
+        self.recon_summary_text.append(f"🎯 ORCHESTRATED PHASE 1 RECONNAISSANCE")
+        self.recon_summary_text.append("=" * 80)
+        self.recon_summary_text.append(f"Target: {target}")
+        self.recon_summary_text.append(f"Mode: {mode.upper()}")
+        self.recon_summary_text.append(f"Recon Tools: {', '.join(selected_recon_tools)}")
+        if selected_osint_tools:
+            self.recon_summary_text.append(f"OSINT Tools: {', '.join(selected_osint_tools)}")
+        if crawler_config:
+            self.recon_summary_text.append(f"Web Crawler: Enabled (depth={crawler_config['max_depth']}, pages={crawler_config['max_pages']}, evasive=True)")
+        self.recon_summary_text.append("=" * 80 + "\n")
+        self.recon_summary_text.append("🔧 Features:")
+        self.recon_summary_text.append("  ✅ Parallel task execution")
+        self.recon_summary_text.append("  ✅ Auto tool validation & installation")
+        self.recon_summary_text.append("  ✅ Error recovery & retry logic")
+        self.recon_summary_text.append("  ✅ Data correlation engine")
+        self.recon_summary_text.append("  ✅ DNS/WHOIS caching")
+        self.recon_summary_text.append("  ✅ IDS/IPS evasion (web crawler)")
+        self.recon_summary_text.append("  ✅ Progress tracking with ETA")
+        self.recon_summary_text.append("=" * 80 + "\n")
+        
+        # Run orchestrated Phase 1 in background
+        try:
+            from gui.orchestrator_worker import Phase1OrchestratorWorker
+            
+            # Create and start worker
+            self.orchestrated_worker = Phase1OrchestratorWorker(
+                target=target,
+                mode=mode,
+                recon_tools=selected_recon_tools,
+                osint_tools=selected_osint_tools,
+                crawler_config=crawler_config
+            )
+            self.orchestrated_worker.progress.connect(self.update_recon_progress)
+            self.orchestrated_worker.finished.connect(self.orchestrated_phase1_finished)
+            self.orchestrated_worker.error.connect(self.recon_error)
+            self.orchestrated_worker.start()
+            
+        except Exception as e:
+            logger.error(f"Failed to start orchestrated Phase 1: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            self.recon_error(str(e))
+    
+    def orchestrated_phase1_finished(self, results: Dict[str, Any]):
+        """Handle orchestrated Phase 1 completion"""
+        try:
+            # Store results
+            self.current_recon_results = results
+            
+            # Update summary view
+            self.recon_summary_text.append("\n" + "=" * 80)
+            self.recon_summary_text.append("✅ ORCHESTRATED PHASE 1 COMPLETED")
+            self.recon_summary_text.append("=" * 80 + "\n")
+            
+            # Display progress summary
+            progress_info = results.get('progress', {})
+            self.recon_summary_text.append("📊 EXECUTION SUMMARY:")
+            self.recon_summary_text.append(f"  • Total Tasks: {progress_info.get('total_tasks', 0)}")
+            self.recon_summary_text.append(f"  • Completed: {progress_info.get('completed', 0)} ({progress_info.get('percentage', 0):.1f}%)")
+            self.recon_summary_text.append(f"  • Failed: {progress_info.get('failed', 0)}")
+            self.recon_summary_text.append("")
+            
+            # Display executive summary
+            summary = results.get('summary', {})
+            self.recon_summary_text.append("🎯 EXECUTIVE SUMMARY:")
+            self.recon_summary_text.append(f"  • Risk Level: {summary.get('risk_level', 'UNKNOWN')}")
+            self.recon_summary_text.append(f"  • Attack Surface Score: {summary.get('attack_surface_score', 0)}")
+            self.recon_summary_text.append(f"  • Total Risk Score: {summary.get('total_risk_score', 0)}")
+            self.recon_summary_text.append(f"  • High Risk Findings: {summary.get('high_risk_findings', 0)}")
+            self.recon_summary_text.append(f"  • Medium Risk Findings: {summary.get('medium_risk_findings', 0)}")
+            self.recon_summary_text.append(f"  • Low Risk Findings: {summary.get('low_risk_findings', 0)}")
+            self.recon_summary_text.append("")
+            
+            # Display correlations summary
+            correlations = results.get('correlations', {})
+            attack_surface = correlations.get('attack_surface', {})
+            
+            self.recon_summary_text.append("🔍 ATTACK SURFACE ANALYSIS:")
+            self.recon_summary_text.append(f"  • Open Ports: {attack_surface.get('open_ports', 0)}")
+            self.recon_summary_text.append(f"  • Web Forms: {attack_surface.get('web_forms', 0)}")
+            self.recon_summary_text.append(f"  • File Upload Points: {attack_surface.get('file_uploads', 0)}")
+            self.recon_summary_text.append(f"  • Subdomains: {attack_surface.get('subdomains', 0)}")
+            self.recon_summary_text.append(f"  • Exposed Technologies: {attack_surface.get('technologies_exposed', 0)}")
+            self.recon_summary_text.append(f"  • Exposed Emails: {attack_surface.get('emails_exposed', 0)}")
+            self.recon_summary_text.append(f"  • Potential Vulnerabilities: {attack_surface.get('potential_vulnerabilities', 0)}")
+            self.recon_summary_text.append("")
+            
+            # Display recommendations
+            recommendations = results.get('recommendations', [])
+            if recommendations:
+                self.recon_summary_text.append("💡 RECOMMENDATIONS:")
+                for rec in recommendations:
+                    self.recon_summary_text.append(f"  {rec}")
+                self.recon_summary_text.append("")
+            
+            # Display detailed results in detailed tab
+            self.recon_detailed_text.clear()
+            self.recon_detailed_text.append("=" * 80)
+            self.recon_detailed_text.append("PHASE 1 DETAILED RESULTS")
+            self.recon_detailed_text.append("=" * 80 + "\n")
+            
+            task_results = results.get('task_results', {})
+            for task_name, task_result in task_results.items():
+                status = task_result.get('status', 'unknown')
+                duration = task_result.get('duration', 0)
+                error = task_result.get('error')
+                
+                status_icon = "✅" if status == "success" else "❌" if status == "failed" else "⏭️"
+                
+                self.recon_detailed_text.append(f"\n{'─' * 80}")
+                self.recon_detailed_text.append(f"{status_icon} {task_name.upper().replace('_', ' ')}")
+                self.recon_detailed_text.append(f"Status: {status} | Duration: {duration:.2f}s")
+                
+                if error:
+                    self.recon_detailed_text.append(f"Error: {error}")
+                
+                if status == "success" and 'data' in task_result:
+                    data = task_result['data']
+                    if data:
+                        self.recon_detailed_text.append(f"\nData: {str(data)[:500]}...")  # Truncate for readability
+            
+            # Display JSON
+            import json
+            self.recon_json_text.clear()
+            self.recon_json_text.append(json.dumps(results, indent=2, default=str))
+            
+            self.recon_summary_text.append("\n✅ Complete Phase 1 reconnaissance finished! Review tabs for full details.")
+            
+        except Exception as e:
+            logger.error(f"Error displaying orchestrated results: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            self.recon_summary_text.append(f"\n⚠️  Error displaying results: {e}")
+        
+        finally:
+            # Update UI
+            self.recon_progress_bar.hide()
+            self.start_recon_button.setEnabled(True)
+            self.start_orchestrated_button.setEnabled(True)
+            self.stop_recon_button.setEnabled(False)
+            self.export_recon_button.setEnabled(True)
+    
+    def export_recon_results(self):
+        """Export reconnaissance results to file"""
+        if not hasattr(self, 'current_recon_results'):
+            QMessageBox.warning(self, "No Results", "No results to export")
+            return
+        
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Reconnaissance Results",
+            f"recon_results_{self.current_recon_results.get('target', 'target').replace('.', '_')}.json",
+            "JSON Files (*.json);;Text Files (*.txt);;All Files (*)"
+        )
+        
+        if file_path:
+            try:
+                import json
+                with open(file_path, 'w') as f:
+                    if file_path.endswith('.json'):
+                        json.dump(self.current_recon_results, f, indent=2)
+                    else:
+                        f.write(self.recon_detailed_text.toPlainText())
+                
+                QMessageBox.information(self, "Export Successful", f"Results exported to:\n{file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Export Failed", f"Failed to export results:\n{str(e)}")
+    
+    # OSINT Investigation Methods
+    
+    def start_osint_investigation(self):
+        """Start OSINT investigation"""
+        target = self.recon_target_input.text().strip()
+        
+        if not target:
+            QMessageBox.warning(self, "Input Required", "Please enter a target for OSINT investigation")
+            return
+        
+        # Get selected tools
+        selected_osint_tools = [tool_id for tool_id, checkbox in self.osint_tool_checkboxes.items() 
+                               if checkbox.isChecked()]
+        
+        if not selected_osint_tools and not self.enable_crawler_checkbox.isChecked():
+            QMessageBox.warning(self, "Tool Selection Required", 
+                              "Please enable web crawler or select at least one OSINT tool")
+            return
+        
+        # Update UI
+        self.start_osint_button.setEnabled(False)
+        self.stop_osint_button.setEnabled(True)
+        self.export_osint_button.setEnabled(False)
+        self.osint_progress_bar.show()
+        
+        # Clear previous results
+        self.osint_summary_text.clear()
+        self.osint_crawl_text.clear()
+        self.osint_breach_text.clear()
+        self.osint_llm_text.clear()
+        self.osint_json_text.clear()
+        
+        # Log start
+        self.osint_summary_text.append("=" * 80)
+        self.osint_summary_text.append(f"🕵️  OSINT INVESTIGATION STARTED")
+        self.osint_summary_text.append("=" * 80)
+        self.osint_summary_text.append(f"Target: {target}")
+        self.osint_summary_text.append(f"Tools: {', '.join(selected_osint_tools)}")
+        if self.enable_crawler_checkbox.isChecked():
+            self.osint_summary_text.append(f"Web Crawler: Enabled (Depth: {self.crawler_depth_spinner.value()}, " 
+                                          f"Max Pages: {self.crawler_pages_spinner.value()})")
+        self.osint_summary_text.append("=" * 80 + "\n")
+        
+        # Run OSINT in background
+        try:
+            from modules.web_crawler import InformationGatherer
+            from modules.osint_tools import OSINTSuite
+            from core.osint_prompts import get_osint_prompt
+            from PyQt5.QtCore import QThread, pyqtSignal
+            
+            class OSINTWorker(QThread):
+                """Worker thread for OSINT investigation"""
+                finished = pyqtSignal(dict)
+                error = pyqtSignal(str)
+                progress = pyqtSignal(str)
+                
+                def __init__(self, target, tools, crawler_enabled, crawler_depth, crawler_pages,
+                           hibp_key, intelx_key, llm_orchestrator):
+                    super().__init__()
+                    self.target = target
+                    self.tools = tools
+                    self.crawler_enabled = crawler_enabled
+                    self.crawler_depth = crawler_depth
+                    self.crawler_pages = crawler_pages
+                    self.hibp_key = hibp_key
+                    self.intelx_key = intelx_key
+                    self.llm_orchestrator = llm_orchestrator
+                
+                def run(self):
+                    try:
+                        results = {
+                            "target": self.target,
+                            "crawl_data": None,
+                            "osint_data": None,
+                            "breach_data": None,
+                            "llm_analysis": {},
+                            "emails_found": []
+                        }
+                        
+                        # Web Crawler
+                        if self.crawler_enabled:
+                            self.progress.emit("🌐 Crawling website and gathering information...")
+                            gatherer = InformationGatherer(self.crawler_depth, self.crawler_pages)
+                            
+                            # Ensure URL has scheme
+                            target_url = self.target
+                            if not target_url.startswith(('http://', 'https://')):
+                                target_url = f'https://{target_url}'
+                            
+                            results["crawl_data"] = gatherer.gather_information(target_url)
+                            results["emails_found"] = results["crawl_data"].get("emails", [])
+                            
+                            self.progress.emit(f"✓ Crawled {results['crawl_data']['pages_crawled']} pages, "
+                                            f"found {len(results['emails_found'])} emails")
+                        
+                        # OSINT Suite
+                        if self.tools:
+                            self.progress.emit("🕵️  Running OSINT tools...")
+                            osint_suite = OSINTSuite(self.hibp_key, self.intelx_key)
+                            
+                            # Determine target type
+                            target_type = "domain"
+                            if "@" in self.target:
+                                target_type = "email"
+                            elif self.target.replace('.', '').isdigit():
+                                target_type = "ip"
+                            
+                            results["osint_data"] = osint_suite.perform_osint(
+                                self.target, target_type, self.tools
+                            )
+                            
+                            self.progress.emit("✓ OSINT tools completed")
+                        
+                        # Have I Been Pwned checks
+                        if 'haveibeenpwned' in self.tools and results["emails_found"]:
+                            self.progress.emit(f"🔒 Checking {len(results['emails_found'])} emails for breaches...")
+                            osint_suite = OSINTSuite(self.hibp_key, self.intelx_key)
+                            results["breach_data"] = osint_suite.check_emails_from_list(results["emails_found"])
+                            
+                            breached_count = len(results["breach_data"].get("breached_emails", []))
+                            self.progress.emit(f"✓ Found {breached_count} breached emails")
+                        
+                        # LLM Analysis
+                        if 'llm_analysis' in self.tools and self.llm_orchestrator:
+                            self.progress.emit("🤖 Running AI analysis...")
+                            
+                            # Analyze web crawl data
+                            if results["crawl_data"]:
+                                self.progress.emit("  → Analyzing web crawl results...")
+                                prompt = get_osint_prompt('web_crawler', results["crawl_data"])
+                                try:
+                                    analysis = self.llm_orchestrator.chat(prompt)
+                                    results["llm_analysis"]["web_crawler"] = analysis
+                                except Exception as e:
+                                    logger.error(f"LLM web crawler analysis failed: {e}")
+                                    results["llm_analysis"]["web_crawler"] = f"Analysis failed: {str(e)}"
+                            
+                            # Analyze breach data
+                            if results["breach_data"]:
+                                self.progress.emit("  → Analyzing breach data...")
+                                prompt = get_osint_prompt('email_breach', results["breach_data"])
+                                try:
+                                    analysis = self.llm_orchestrator.chat(prompt)
+                                    results["llm_analysis"]["breach"] = analysis
+                                except Exception as e:
+                                    logger.error(f"LLM breach analysis failed: {e}")
+                                    results["llm_analysis"]["breach"] = f"Analysis failed: {str(e)}"
+                            
+                            # Overall correlation
+                            if results["crawl_data"] or results["osint_data"]:
+                                self.progress.emit("  → Correlating OSINT data...")
+                                combined_data = {
+                                    "crawl": results["crawl_data"],
+                                    "osint": results["osint_data"],
+                                    "breaches": results["breach_data"]
+                                }
+                                prompt = get_osint_prompt('correlation', combined_data)
+                                try:
+                                    analysis = self.llm_orchestrator.chat(prompt)
+                                    results["llm_analysis"]["correlation"] = analysis
+                                except Exception as e:
+                                    logger.error(f"LLM correlation analysis failed: {e}")
+                                    results["llm_analysis"]["correlation"] = f"Analysis failed: {str(e)}"
+                            
+                            self.progress.emit("✓ AI analysis completed")
+                        
+                        self.finished.emit(results)
+                    
+                    except Exception as e:
+                        logger.error(f"OSINT investigation error: {e}")
+                        self.error.emit(str(e))
+            
+            # Get API keys
+            hibp_key = self.hibp_api_key_input.text().strip() or None
+            intelx_key = self.intelx_api_key_input.text().strip() or None
+            
+            # Create and start worker
+            self.osint_worker = OSINTWorker(
+                target,
+                selected_osint_tools,
+                self.enable_crawler_checkbox.isChecked(),
+                self.crawler_depth_spinner.value(),
+                self.crawler_pages_spinner.value(),
+                hibp_key,
+                intelx_key,
+                self.pentest_engine.orchestrator if self.pentest_engine else None
+            )
+            self.osint_worker.progress.connect(self.update_osint_progress)
+            self.osint_worker.finished.connect(self.osint_investigation_finished)
+            self.osint_worker.error.connect(self.osint_investigation_error)
+            self.osint_worker.start()
+            
+        except Exception as e:
+            logger.error(f"Failed to start OSINT investigation: {e}")
+            self.osint_investigation_error(str(e))
+    
+    def update_osint_progress(self, message: str):
+        """Update OSINT progress"""
+        self.osint_summary_text.append(f"⏳ {message}")
+    
+    def osint_investigation_finished(self, results: Dict[str, Any]):
+        """Handle OSINT investigation completion"""
+        try:
+            # Store results
+            self.current_osint_results = results
+            
+            # Update summary
+            self.osint_summary_text.append("\n" + "=" * 80)
+            self.osint_summary_text.append("✅ OSINT INVESTIGATION COMPLETED")
+            self.osint_summary_text.append("=" * 80 + "\n")
+            
+            # Display crawl summary
+            if results.get("crawl_data"):
+                crawl = results["crawl_data"]
+                self.osint_summary_text.append("🌐 WEB CRAWL SUMMARY:")
+                self.osint_summary_text.append(f"  • Pages Crawled: {crawl.get('pages_crawled', 0)}")
+                self.osint_summary_text.append(f"  • Emails Found: {len(crawl.get('emails', []))}")
+                self.osint_summary_text.append(f"  • Forms Detected: {len(crawl.get('forms', []))}")
+                self.osint_summary_text.append(f"  • Technologies: {len(crawl.get('technologies', []))}")
+                self.osint_summary_text.append(f"  • Potential Vulnerabilities: {len(crawl.get('potential_vulnerabilities', []))}")
+                self.osint_summary_text.append("")
+                
+                # Detailed crawl results
+                self.osint_crawl_text.append("=" * 80)
+                self.osint_crawl_text.append("WEB CRAWL DETAILED RESULTS")
+                self.osint_crawl_text.append("=" * 80 + "\n")
+                
+                if crawl.get('emails'):
+                    self.osint_crawl_text.append("📧 EMAILS FOUND:")
+                    for email in crawl['emails'][:20]:  # Limit display
+                        self.osint_crawl_text.append(f"  • {email}")
+                    if len(crawl['emails']) > 20:
+                        self.osint_crawl_text.append(f"  ... and {len(crawl['emails']) - 20} more")
+                    self.osint_crawl_text.append("")
+                
+                if crawl.get('technologies'):
+                    self.osint_crawl_text.append("⚙️  TECHNOLOGIES DETECTED:")
+                    for tech in crawl['technologies']:
+                        self.osint_crawl_text.append(f"  • {tech}")
+                    self.osint_crawl_text.append("")
+                
+                if crawl.get('potential_vulnerabilities'):
+                    self.osint_crawl_text.append("⚠️  POTENTIAL VULNERABILITIES:")
+                    for vuln in crawl['potential_vulnerabilities']:
+                        self.osint_crawl_text.append(f"  • [{vuln.get('severity', 'Unknown')}] {vuln.get('type', 'Unknown')}")
+                        self.osint_crawl_text.append(f"    {vuln.get('description', '')}")
+                    self.osint_crawl_text.append("")
+            
+            # Display breach data
+            if results.get("breach_data"):
+                breach = results["breach_data"]
+                self.osint_summary_text.append("🔒 BREACH CHECK SUMMARY:")
+                self.osint_summary_text.append(f"  • Emails Checked: {breach.get('emails_checked', 0)}")
+                self.osint_summary_text.append(f"  • Breached Emails: {len(breach.get('breached_emails', []))}")
+                self.osint_summary_text.append(f"  • Total Breaches: {breach.get('total_breaches', 0)}")
+                self.osint_summary_text.append("")
+                
+                # Detailed breach results
+                self.osint_breach_text.append("=" * 80)
+                self.osint_breach_text.append("BREACH DATA ANALYSIS")
+                self.osint_breach_text.append("=" * 80 + "\n")
+                
+                if breach.get('breached_emails'):
+                    self.osint_breach_text.append("⚠️  BREACHED EMAILS:")
+                    for email in breach['breached_emails']:
+                        email_data = breach['details'].get(email, {})
+                        self.osint_breach_text.append(f"\n📧 {email}")
+                        self.osint_breach_text.append(f"   Breaches: {email_data.get('breach_count', 0)}")
+                        
+                        for breach_item in email_data.get('breaches', [])[:5]:  # Limit to 5
+                            name = breach_item.get('Name', 'Unknown')
+                            date = breach_item.get('BreachDate', 'Unknown')
+                            self.osint_breach_text.append(f"   • {name} ({date})")
+                
+                if breach.get('clean_emails'):
+                    self.osint_breach_text.append(f"\n✅ CLEAN EMAILS ({len(breach['clean_emails'])}):")
+                    for email in breach['clean_emails'][:10]:
+                        self.osint_breach_text.append(f"   • {email}")
+            
+            # Display LLM analysis
+            if results.get("llm_analysis"):
+                self.osint_summary_text.append("🤖 AI ANALYSIS AVAILABLE:")
+                self.osint_summary_text.append("  See 'AI Analysis' tab for detailed insights")
+                self.osint_summary_text.append("")
+                
+                self.osint_llm_text.append("=" * 80)
+                self.osint_llm_text.append("AI-POWERED OSINT ANALYSIS")
+                self.osint_llm_text.append("=" * 80 + "\n")
+                
+                for analysis_type, analysis_result in results["llm_analysis"].items():
+                    self.osint_llm_text.append(f"\n{'─' * 80}")
+                    self.osint_llm_text.append(f"📊 {analysis_type.upper().replace('_', ' ')} ANALYSIS")
+                    self.osint_llm_text.append('─' * 80 + "\n")
+                    self.osint_llm_text.append(str(analysis_result))
+            
+            # JSON export
+            import json
+            self.osint_json_text.setPlainText(json.dumps(results, indent=2, default=str))
+            
+            # Recommendations
+            self.osint_summary_text.append("💡 RECOMMENDATIONS:")
+            
+            if results.get("crawl_data"):
+                crawl = results["crawl_data"]
+                if len(crawl.get('potential_vulnerabilities', [])) > 0:
+                    self.osint_summary_text.append("  ⚠️  Address identified vulnerabilities immediately")
+                
+                if len(crawl.get('emails', [])) > 5:
+                    self.osint_summary_text.append("  ⚠️  Consider masking email addresses to prevent scraping")
+                
+                if crawl.get('forms'):
+                    self.osint_summary_text.append("  🔍 Review all forms for proper security controls")
+            
+            if results.get("breach_data") and results["breach_data"].get('breached_emails'):
+                self.osint_summary_text.append("  🔒 Force password resets for breached emails")
+                self.osint_summary_text.append("  🔐 Implement multi-factor authentication")
+            
+            self.osint_summary_text.append("\n✅ OSINT investigation complete!")
+            
+        except Exception as e:
+            logger.error(f"Error displaying OSINT results: {e}")
+            self.osint_summary_text.append(f"\n⚠️  Error displaying results: {e}")
+        
+        finally:
+            # Update UI
+            self.osint_progress_bar.hide()
+            self.start_osint_button.setEnabled(True)
+            self.stop_osint_button.setEnabled(False)
+            self.export_osint_button.setEnabled(True)
+    
+    def osint_investigation_error(self, error_msg: str):
+        """Handle OSINT investigation error"""
+        self.osint_summary_text.append(f"\n❌ ERROR: {error_msg}")
+        self.osint_progress_bar.hide()
+        self.start_osint_button.setEnabled(True)
+        self.stop_osint_button.setEnabled(False)
+        QMessageBox.critical(self, "OSINT Investigation Error", f"An error occurred:\n{error_msg}")
+    
+    def stop_osint_investigation(self):
+        """Stop OSINT investigation"""
+        if hasattr(self, 'osint_worker') and self.osint_worker.isRunning():
+            self.osint_worker.terminate()
+            self.osint_worker.wait()
+            self.osint_summary_text.append("\n⛔ Investigation stopped by user")
+            self.osint_progress_bar.hide()
+            self.start_osint_button.setEnabled(True)
+            self.stop_osint_button.setEnabled(False)
+    
+    def export_osint_results(self):
+        """Export OSINT results to file"""
+        if not hasattr(self, 'current_osint_results'):
+            QMessageBox.warning(self, "No Results", "No OSINT results to export")
+            return
+        
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export OSINT Results",
+            f"osint_results_{self.current_osint_results.get('target', 'target').replace('.', '_')}.json",
+            "JSON Files (*.json);;HTML Report (*.html);;Text Files (*.txt);;All Files (*)"
+        )
+        
+        if file_path:
+            try:
+                import json
+                with open(file_path, 'w') as f:
+                    if file_path.endswith('.json'):
+                        json.dump(self.current_osint_results, f, indent=2, default=str)
+                    elif file_path.endswith('.html'):
+                        # Generate HTML report
+                        html = self._generate_osint_html_report(self.current_osint_results)
+                        f.write(html)
+                    else:
+                        # Text format
+                        f.write(self.osint_summary_text.toPlainText())
+                        f.write("\n\n" + "=" * 80 + "\n")
+                        f.write("DETAILED WEB CRAWL\n")
+                        f.write("=" * 80 + "\n")
+                        f.write(self.osint_crawl_text.toPlainText())
+                
+                QMessageBox.information(self, "Export Successful", f"OSINT results exported to:\n{file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Export Failed", f"Failed to export results:\n{str(e)}")
+    
+    def _generate_osint_html_report(self, results: Dict[str, Any]) -> str:
+        """Generate HTML report for OSINT results"""
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>OSINT Investigation Report - {results.get('target', 'Unknown')}</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }}
+                .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 30px; }}
+                h1 {{ color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }}
+                h2 {{ color: #34495e; margin-top: 30px; }}
+                .section {{ margin: 20px 0; padding: 15px; background: #ecf0f1; border-left: 4px solid #3498db; }}
+                .warning {{ background: #fff3cd; border-left-color: #ffc107; }}
+                .danger {{ background: #f8d7da; border-left-color: #dc3545; }}
+                .success {{ background: #d4edda; border-left-color: #28a745; }}
+                .data {{ font-family: monospace; background: #2c3e50; color: #ecf0f1; padding: 15px; overflow-x: auto; }}
+                ul {{ list-style-type: none; padding-left: 0; }}
+                li {{ padding: 5px 0; }}
+                .badge {{ display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 12px; }}
+                .badge-high {{ background: #dc3545; color: white; }}
+                .badge-medium {{ background: #ffc107; color: black; }}
+                .badge-low {{ background: #28a745; color: white; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🕵️ OSINT Investigation Report</h1>
+                <p><strong>Target:</strong> {results.get('target', 'Unknown')}</p>
+                <p><strong>Date:</strong> {__import__('datetime').datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                
+                <h2>Executive Summary</h2>
+                <div class="section">
+                    {self._format_osint_summary_html(results)}
+                </div>
+                
+                <h2>Detailed Findings</h2>
+                {self._format_osint_details_html(results)}
+            </div>
+        </body>
+        </html>
+        """
+        return html
+    
+    def _format_osint_summary_html(self, results: Dict[str, Any]) -> str:
+        """Format OSINT summary for HTML"""
+        summary = "<ul>"
+        
+        if results.get('crawl_data'):
+            crawl = results['crawl_data']
+            summary += f"<li>📄 Pages Crawled: {crawl.get('pages_crawled', 0)}</li>"
+            summary += f"<li>📧 Emails Found: {len(crawl.get('emails', []))}</li>"
+            summary += f"<li>⚠️  Vulnerabilities: {len(crawl.get('potential_vulnerabilities', []))}</li>"
+        
+        if results.get('breach_data'):
+            breach = results['breach_data']
+            summary += f"<li>🔒 Breached Emails: {len(breach.get('breached_emails', []))}</li>"
+        
+        summary += "</ul>"
+        return summary
+    
+    def _format_osint_details_html(self, results: Dict[str, Any]) -> str:
+        """Format OSINT details for HTML"""
+        details = ""
+        
+        if results.get('crawl_data') and results['crawl_data'].get('potential_vulnerabilities'):
+            details += '<div class="section danger"><h3>⚠️  Security Issues</h3><ul>'
+            for vuln in results['crawl_data']['potential_vulnerabilities']:
+                severity = vuln.get('severity', 'Unknown')
+                badge_class = f"badge-{severity.lower()}"
+                details += f'<li><span class="badge {badge_class}">{severity}</span> {vuln.get("type", "Unknown")}: {vuln.get("description", "")}</li>'
+            details += '</ul></div>'
+        
+        return details
 
 
 def main():

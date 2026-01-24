@@ -1,0 +1,202 @@
+"""
+Quick Start Guide - Phase 1 Reconnaissance
+==========================================
+
+STEP-BY-STEP USAGE:
+
+1. Launch Application
+   ---------------------
+   python main.py
+
+2. Navigate to Phase 1 Tab
+   ------------------------
+   Click: "🔍 Phase 1: Recon"
+
+3. Enter Target
+   ------------
+   Examples:
+   - Domain: example.com
+   - IP: 192.168.1.1
+   - Range: 10.0.0.0/24
+
+4. Choose Mode
+   -----------
+   Quick Scan    → 1-3 min   | Top 100 ports, basic info
+   Balanced Scan → 5-10 min  | Top 1000 ports, services (RECOMMENDED)
+   Deep Scan     → 15-30 min | All ports, OS detection, full enum
+   Stealth Scan  → 20-60 min | Slow & evasive, IDS bypass
+
+5. Select Tools
+   ------------
+   Quick Buttons:
+   ✅ Select All      → Enable all 6 tools
+   ❌ Deselect All    → Disable all tools
+   ⭐ Essential Only  → Nmap + DNS + WHOIS (fastest)
+
+   Individual Tools:
+   🌐 Nmap            → Port scanning (REQUIRED)
+   📋 DNS             → DNS enumeration
+   🔍 WHOIS           → Domain info
+   🌳 Subdomain       → Subdomain discovery
+   ⚙️ Service         → Version detection
+   💻 OS Detection    → OS fingerprinting
+
+6. Start Scan
+   ----------
+   Click: "🚀 Start Reconnaissance"
+   
+   Watch progress in Summary tab
+   Stop anytime with "⛔ Stop" button
+
+7. Review Results
+   --------------
+   📋 Summary Tab    → Quick overview + recommendations
+   🔍 Detailed Tab   → Full raw output from each tool
+   { } JSON Tab      → Structured data for export
+
+8. Export (Optional)
+   -----------------
+   Click: "📄 Export Results"
+   
+   Formats:
+   - JSON → For automation/integration
+   - TXT  → Human-readable report
+
+
+PRESETS FOR COMMON SCENARIOS:
+==============================
+
+🎯 SCENARIO 1: Quick Network Discovery
+   Target:  192.168.1.0/24
+   Mode:    Quick Scan
+   Tools:   Nmap + DNS
+   Time:    ~2 minutes
+   Purpose: Fast host enumeration
+
+🎯 SCENARIO 2: Web Application Recon
+   Target:  example.com
+   Mode:    Balanced Scan
+   Tools:   All except OS Detection
+   Time:    ~7 minutes
+   Purpose: Web app reconnaissance
+
+🎯 SCENARIO 3: Full Security Assessment
+   Target:  target.com
+   Mode:    Deep Scan
+   Tools:   Select All
+   Time:    ~20 minutes
+   Purpose: Comprehensive vulnerability assessment
+
+🎯 SCENARIO 4: Stealth Operation
+   Target:  sensitive-target.com
+   Mode:    Stealth Scan
+   Tools:   Nmap + Service (minimal)
+   Time:    ~30 minutes
+   Purpose: Avoid IDS/IPS detection
+
+
+KEYBOARD SHORTCUTS:
+===================
+(When in Phase 1 Recon tab)
+
+Ctrl+Enter → Start Reconnaissance
+Escape     → Stop Scan
+Ctrl+E     → Export Results
+Ctrl+A     → Select All Tools
+Ctrl+D     → Deselect All Tools
+
+
+TROUBLESHOOTING:
+================
+
+❌ "No tools available"
+   → Install nmap: sudo apt install nmap (Linux)
+   → Or download from: https://nmap.org/download.html
+
+❌ "Permission denied for OS detection"
+   → Deep scan requires sudo/admin rights
+   → Use Balanced or Quick scan instead
+   → Or run application as administrator
+
+❌ "Scan taking too long"
+   → Click "⛔ Stop" button
+   → Switch to Quick Scan mode
+   → Reduce number of tools selected
+   → Use smaller target range
+
+❌ "No results showing"
+   → Check target is reachable
+   → Verify firewall settings
+   → Try ping target first
+   → Check network connectivity
+
+
+INTERPRETATION GUIDE:
+====================
+
+Open Ports:
+-----------
+22/tcp   → SSH server (remote access)
+80/tcp   → HTTP web server
+443/tcp  → HTTPS secure web server
+3306/tcp → MySQL database
+8080/tcp → Alternative HTTP port
+
+⚠️ Many open ports = Large attack surface
+✅ Only necessary ports = Better security
+
+Services:
+---------
+Look for:
+- Outdated versions (security risk)
+- Default configurations
+- Unnecessary services
+- Known vulnerable software
+
+OS Detection:
+------------
+Example: "Linux 3.x-4.x"
+- Helps identify potential exploits
+- Shows patch level
+- Indicates OS-specific vulnerabilities
+
+Subdomains:
+----------
+Examples:
+- admin.example.com  → Admin panels (HIGH PRIORITY)
+- dev.example.com    → Development servers (often less secure)
+- mail.example.com   → Email servers
+- vpn.example.com    → VPN endpoints
+
+More subdomains = Larger attack surface
+
+
+SAFETY & LEGAL:
+===============
+
+✅ DO SCAN:
+- Your own systems
+- Lab environments
+- Systems with written permission
+- scanme.nmap.org (official test server)
+
+❌ DO NOT SCAN:
+- Systems you don't own
+- Production systems without approval
+- Government/military networks
+- Banking/financial systems
+- Without explicit written authorization
+
+⚠️ Unauthorized scanning may be ILLEGAL
+⚠️ Always get permission first
+⚠️ Document all authorizations
+
+
+NEED HELP?
+==========
+
+Check logs in: logs/
+Review documentation: README.md
+Phase details: PHASE1_IMPLEMENTATION.md
+
+"""
