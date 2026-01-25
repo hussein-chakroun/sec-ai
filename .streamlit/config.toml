@@ -1,0 +1,31 @@
+# Streamlit Configuration for EsecAi Web Interface
+
+[server]
+port = 8501
+address = "localhost"
+maxUploadSize = 200
+enableCORS = false
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501
+
+[theme]
+primaryColor = "#58a6ff"
+backgroundColor = "#0d1117"
+secondaryBackgroundColor = "#161b22"
+textColor = "#c9d1d9"
+font = "sans serif"
+
+[runner]
+magicEnabled = true
+fastReruns = true
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true
+
+[logger]
+level = "info"

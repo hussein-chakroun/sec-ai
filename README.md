@@ -2,6 +2,32 @@
 
 An AI-powered autonomous penetration testing platform with intelligent memory, multi-agent swarm intelligence, and advanced evasion capabilities.
 
+## 🚀 NEW: Main Orchestrator - Complete Autonomous Pentesting
+
+The **Main Orchestrator** is the central coordination system that orchestrates all 5 phases of penetration testing with advanced AI-driven decision making.
+
+### Quick Start with Main Orchestrator
+
+```bash
+# Complete autonomous pentest with all features
+python main.py --orchestrator --target 192.168.1.100 --enable-all
+
+# Or in Python
+from core import run_autonomous_pentest
+results = await run_autonomous_pentest(target="192.168.1.100", enable_all_features=True)
+```
+
+**Features:**
+- 🤖 **AI-Driven Strategy**: LLM plans and adapts attack strategy in real-time
+- 🧠 **Memory & Learning**: Learns from every engagement and improves over time
+- 🐝 **Agent Swarm**: Coordinates multiple specialized agents for parallel execution
+- 🔄 **Complete Workflow**: Seamlessly manages all 5 phases from recon to domain dominance
+- 📊 **Executive Reporting**: Generates LLM-powered executive summaries
+
+[📖 Full Documentation](docs/MAIN_ORCHESTRATOR.md) | [⚡ Quick Start Guide](QUICKSTART_ORCHESTRATOR.md) | [💡 Examples](examples/orchestrator_example.py)
+
+---
+
 ## 🎯 Project Status - ALL PHASES COMPLETE ✅
 
 ### ✅ Phase 1: Foundation Layer (COMPLETE)
@@ -268,7 +294,7 @@ OLLAMA_MODEL=mistral
 
 #### Running the Application
 
-**GUI Mode** (Recommended):
+**GUI Mode - Desktop** (PyQt5):
 ```bash
 # Using the run script
 ./run.sh
@@ -277,6 +303,21 @@ OLLAMA_MODEL=mistral
 source venv/bin/activate
 python main.py
 ```
+
+**Web Interface** (Streamlit):
+```bash
+# Windows
+start_web.bat
+
+# Linux/Mac
+./start_web.sh
+
+# Or manually
+pip install -r requirements_web.txt
+streamlit run web_app.py
+```
+
+Access at `http://localhost:8501` after starting. See [WEB_INTERFACE_README.md](WEB_INTERFACE_README.md) for detailed documentation.
 
 **CLI Mode**:
 ```bash

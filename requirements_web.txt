@@ -1,0 +1,14 @@
+# Web Application Requirements
+# Streamlit-based web interface for EsecAi
+
+# Core web framework
+streamlit>=1.31.0
+streamlit-aggrid>=0.3.4
+
+# Data visualization
+pandas>=2.0.0
+plotly>=5.18.0
+altair>=5.2.0
+
+# All existing requirements from requirements.txt
+# (Include this file by running: pip install -r requirements.txt first)

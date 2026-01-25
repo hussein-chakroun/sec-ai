@@ -1,6 +1,7 @@
 """
 Main GUI Application for Autonomous Penetration Testing Platform
-Supports Phases 1-12: Full-Spectrum AI-Powered Security Testing
+Fully Implemented Phases: 1 (Recon), 2 (Vuln Scan), 3 (Exploitation), 
+4 (Post-Exploitation), 5 (Lateral Movement), 12 (AI Adaptive)
 """
 import sys
 from typing import Dict, Any
@@ -47,11 +48,11 @@ class PentestWorker(QThread):
 
 
 class MainWindow(QMainWindow):
-    """Main application window with full Phase 1-8 support"""
+    """Main application window with Phase 1-5 & 12 fully implemented"""
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("EsecAi - AI-Powered Security Testing Platform")
+        self.setWindowTitle("EsecAi - AI-Powered Penetration Testing Platform")
         self.setGeometry(100, 100, 1400, 900)
         self.setMinimumSize(1200, 700)  # Set minimum size
         
@@ -206,18 +207,12 @@ class MainWindow(QMainWindow):
         
         # Phase selections
         self.enabled_phases = {
-            'phase1': True,   # Basic reconnaissance
-            'phase2': True,   # Advanced scanning
+            'phase1': True,   # Reconnaissance
+            'phase2': True,   # Vulnerability Scanning
             'phase3': True,   # Exploitation
-            'phase4': True,   # Evasion
-            'phase5': True,   # Post-exploitation
-            'phase6': True,   # Advanced persistence
-            'phase7': True,   # Autonomous operations
-            'phase8': True,   # Data exfiltration & impact
-            'phase9': True,   # Adversary simulation
-            'phase10': True,  # Physical & social engineering
-            'phase11': True,  # IoT & embedded systems
-            'phase12': True   # AI-powered adaptive exploitation
+            'phase4': True,   # Post-Exploitation
+            'phase5': True,   # Lateral Movement
+            'phase12': True   # AI Adaptive Exploitation
         }
         
         self.init_ui()
@@ -259,7 +254,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(title)
         
         # Subtitle
-        subtitle = QLabel("AI-Powered Autonomous Security Testing Platform")
+        subtitle = QLabel("AI-Powered Autonomous Penetration Testing | Phase 1-5 + Phase 12")
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setStyleSheet("color: #8b949e; font-size: 13px; margin-bottom: 10px;")
         main_layout.addWidget(subtitle)
@@ -284,39 +279,27 @@ class MainWindow(QMainWindow):
         recon_tab = self.create_reconnaissance_tab()
         tabs.addTab(recon_tab, "🔍 Phase 1: Recon")
         
-        # Tab 5: Data Discovery (Phase 8)
-        discovery_tab = self.create_discovery_tab()
-        tabs.addTab(discovery_tab, "📊 Data Discovery")
+        # Tab 5: Phase 2 Vulnerability Scanning
+        vuln_scan_tab = self.create_vulnerability_scanning_tab()
+        tabs.addTab(vuln_scan_tab, "🎯 Phase 2: Vuln Scan")
         
-        # Tab 5: Exfiltration (Phase 8)
-        exfil_tab = self.create_exfiltration_tab()
-        tabs.addTab(exfil_tab, "📤 Exfiltration")
+        # Tab 6: Phase 3 Exploitation
+        exploitation_tab = self.create_exploitation_tab()
+        tabs.addTab(exploitation_tab, "💣 Phase 3: Exploitation")
         
-        # Tab 6: Impact Analysis (Phase 8)
-        impact_tab = self.create_impact_tab()
-        tabs.addTab(impact_tab, "💥 Impact Analysis")
+        # Tab 7: Phase 4 Post-Exploitation
+        postexploit_tab = self.create_postexploitation_tab()
+        tabs.addTab(postexploit_tab, "🔓 Phase 4: Post-Exploit")
         
-        # Tab 7: Compliance (Phase 8)
-        compliance_tab = self.create_compliance_tab()
-        tabs.addTab(compliance_tab, "📋 Compliance")
+        # Tab 8: Phase 5 Lateral Movement
+        lateral_tab = self.create_lateral_movement_tab()
+        tabs.addTab(lateral_tab, "🌐 Phase 5: Lateral Movement")
         
-        # Tab 8: Adversary Simulation (Phase 9)
-        adversary_tab = self.create_adversary_simulation_tab()
-        tabs.addTab(adversary_tab, "👥 Adversary Sim")
-        
-        # Tab 9: Physical/Social Engineering (Phase 10)
-        physical_tab = self.create_physical_social_tab()
-        tabs.addTab(physical_tab, "🎭 Physical/Social")
-        
-        # Tab 10: IoT & Embedded (Phase 11)
-        iot_tab = self.create_iot_embedded_tab()
-        tabs.addTab(iot_tab, "📡 IoT/Embedded")
-        
-        # Tab 11: AI Adaptive Exploitation (Phase 12)
+        # Tab 9: Phase 12 AI Adaptive Exploitation
         ai_tab = self.create_ai_adaptive_tab()
-        tabs.addTab(ai_tab, "🤖 AI Adaptive")
+        tabs.addTab(ai_tab, "🤖 Phase 12: AI Adaptive")
         
-        # Tab 12: Tools Status
+        # Tab 10: Tools Status
         tools_tab = self.create_tools_tab()
         tabs.addTab(tools_tab, "🛠️ Tools Status")
     
@@ -373,15 +356,15 @@ class MainWindow(QMainWindow):
         
         phase_buttons_layout1 = QHBoxLayout()
         
-        all_phases_btn = QPushButton("✅ All Phases (1-12)")
-        all_phases_btn.clicked.connect(lambda: self.quick_select_phases('all'))
-        phase_buttons_layout1.addWidget(all_phases_btn)
-        
-        recon_only_btn = QPushButton("🔍 Recon Only (1-2)")
+        recon_only_btn = QPushButton("🔍 Recon Only (Phase 1)")
         recon_only_btn.clicked.connect(lambda: self.quick_select_phases('recon'))
         phase_buttons_layout1.addWidget(recon_only_btn)
         
-        exploit_btn = QPushButton("💥 Up to Exploit (1-5)")
+        vuln_scan_btn = QPushButton("🎯 Recon + Vuln Scan (1→2)")
+        vuln_scan_btn.clicked.connect(lambda: self.quick_select_phases('vulnscan'))
+        phase_buttons_layout1.addWidget(vuln_scan_btn)
+        
+        exploit_btn = QPushButton("💥 Through Exploitation (1→2→3)")
         exploit_btn.clicked.connect(lambda: self.quick_select_phases('exploit'))
         phase_buttons_layout1.addWidget(exploit_btn)
         
@@ -389,17 +372,17 @@ class MainWindow(QMainWindow):
         
         phase_buttons_layout2 = QHBoxLayout()
         
-        full_attack_btn = QPushButton("🎯 Full Attack (1-8)")
-        full_attack_btn.clicked.connect(lambda: self.quick_select_phases('attack'))
-        phase_buttons_layout2.addWidget(full_attack_btn)
+        postexploit_btn = QPushButton("🔓 Through Post-Exploit (1→2→3→4)")
+        postexploit_btn.clicked.connect(lambda: self.quick_select_phases('postexploit'))
+        phase_buttons_layout2.addWidget(postexploit_btn)
         
-        advanced_btn = QPushButton("🚀 Advanced (1-10)")
-        advanced_btn.clicked.connect(lambda: self.quick_select_phases('advanced'))
-        phase_buttons_layout2.addWidget(advanced_btn)
-        
-        complete_btn = QPushButton("🔥 Complete Suite (1-12)")
+        complete_btn = QPushButton("🔥 Complete Pentest (1→2→3→4→5)")
         complete_btn.clicked.connect(lambda: self.quick_select_phases('complete'))
         phase_buttons_layout2.addWidget(complete_btn)
+        
+        ai_adaptive_btn = QPushButton("🤖 AI Adaptive (Phase 12)")
+        ai_adaptive_btn.clicked.connect(lambda: self.quick_select_phases('ai'))
+        phase_buttons_layout2.addWidget(ai_adaptive_btn)
         
         quick_phase_layout.addLayout(phase_buttons_layout2)
         layout.addWidget(quick_phase_group)
@@ -504,18 +487,12 @@ class MainWindow(QMainWindow):
         self.phase_checkboxes = {}
         
         phases = [
-            ('phase1', 'Phase 1: Basic Reconnaissance', 'Network discovery, port scanning, service enumeration'),
-            ('phase2', 'Phase 2: Advanced Scanning', 'Web scanning, vulnerability detection, CVE matching'),
-            ('phase3', 'Phase 3: Exploitation', 'Vulnerability exploitation, payload delivery'),
-            ('phase4', 'Phase 4: Evasion', 'IDS/WAF bypass, anti-forensics, traffic obfuscation'),
-            ('phase5', 'Phase 5: Post-Exploitation', 'Credential harvesting, lateral movement, privilege escalation'),
-            ('phase6', 'Phase 6: Advanced Persistence', 'Rootkits, covert channels, advanced backdoors'),
-            ('phase7', 'Phase 7: Autonomous Operations', 'Multi-agent coordination, self-improvement, swarm intelligence'),
-            ('phase8', 'Phase 8: Data Exfiltration & Impact', 'Data discovery, exfiltration, impact analysis, compliance'),
-            ('phase9', 'Phase 9: Adversary Simulation', 'MITRE ATT&CK emulation, purple team ops, threat actor profiles'),
-            ('phase10', 'Phase 10: Physical & Social Engineering', 'OSINT, phishing, badge cloning, deepfakes'),
-            ('phase11', 'Phase 11: IoT & Embedded Systems', 'Firmware analysis, ICS/SCADA, wireless attacks'),
-            ('phase12', 'Phase 12: AI-Powered Adaptive Exploitation', 'Reinforcement learning, adversarial ML, autonomous research')
+            ('phase1', 'Phase 1: Reconnaissance', 'Network discovery, port scanning, service enumeration, OSINT'),
+            ('phase2', 'Phase 2: Vulnerability Scanning', 'Web scanning, vulnerability detection, CVE correlation'),
+            ('phase3', 'Phase 3: Exploitation', 'LLM-driven exploit execution, Metasploit, custom exploits'),
+            ('phase4', 'Phase 4: Post-Exploitation', 'Privilege escalation, credential harvesting, persistence installation'),
+            ('phase5', 'Phase 5: Lateral Movement', 'Network spreading, Active Directory attacks, domain dominance'),
+            ('phase12', 'Phase 12: AI Adaptive Exploitation', 'Reinforcement learning, adversarial ML, autonomous research')
         ]
         
         for phase_id, phase_name, phase_desc in phases:
@@ -536,6 +513,259 @@ class MainWindow(QMainWindow):
             layout.addWidget(phase_widget)
         
         layout.addStretch()
+        
+        return widget
+    
+    def create_exploitation_tab(self):
+        """Create Phase 3: Exploitation tab"""
+        widget = QWidget()
+        layout = QVBoxLayout()
+        widget.setLayout(layout)
+        
+        layout.addWidget(QLabel("Phase 3: LLM-Driven Intelligent Exploitation"))
+        
+        # Configuration
+        config_group = QGroupBox("Exploitation Configuration")
+        config_layout = QVBoxLayout()
+        config_group.setLayout(config_layout)
+        
+        # Max attempts
+        attempts_layout = QHBoxLayout()
+        attempts_layout.addWidget(QLabel("Max Attempts per Vulnerability:"))
+        self.exploit_max_attempts = QSpinBox()
+        self.exploit_max_attempts.setRange(1, 10)
+        self.exploit_max_attempts.setValue(3)
+        attempts_layout.addWidget(self.exploit_max_attempts)
+        attempts_layout.addStretch()
+        config_layout.addLayout(attempts_layout)
+        
+        # Timeout
+        timeout_layout = QHBoxLayout()
+        timeout_layout.addWidget(QLabel("Exploit Timeout (seconds):"))
+        self.exploit_timeout = QSpinBox()
+        self.exploit_timeout.setRange(60, 3600)
+        self.exploit_timeout.setValue(300)
+        timeout_layout.addWidget(self.exploit_timeout)
+        timeout_layout.addStretch()
+        config_layout.addLayout(timeout_layout)
+        
+        # Options
+        self.exploit_safe_mode = QCheckBox("Safe Mode (Prevent System Damage)")
+        self.exploit_safe_mode.setChecked(True)
+        config_layout.addWidget(self.exploit_safe_mode)
+        
+        self.exploit_aggressive = QCheckBox("Aggressive Mode (Try All Techniques)")
+        config_layout.addWidget(self.exploit_aggressive)
+        
+        self.exploit_metasploit = QCheckBox("Use Metasploit Framework")
+        self.exploit_metasploit.setChecked(True)
+        config_layout.addWidget(self.exploit_metasploit)
+        
+        self.exploit_custom_generator = QCheckBox("Use Custom Exploit Generator")
+        self.exploit_custom_generator.setChecked(True)
+        config_layout.addWidget(self.exploit_custom_generator)
+        
+        layout.addWidget(config_group)
+        
+        # Results area
+        results_group = QGroupBox("Exploitation Results")
+        results_layout = QVBoxLayout()
+        results_group.setLayout(results_layout)
+        
+        self.exploitation_results_text = QTextEdit()
+        self.exploitation_results_text.setReadOnly(True)
+        self.exploitation_results_text.setPlaceholderText("Exploitation results will appear here...\\n\\nPhase 3 requires Phase 1 & 2 results.\\nUse 'Run Phase 1→2→3' workflow from the Phases tab.")
+        results_layout.addWidget(self.exploitation_results_text)
+        
+        layout.addWidget(results_group)
+        
+        return widget
+    
+    def create_postexploitation_tab(self):
+        """Create Phase 4: Post-Exploitation tab"""
+        widget = QWidget()
+        layout = QVBoxLayout()
+        widget.setLayout(layout)
+        
+        layout.addWidget(QLabel("Phase 4: Post-Exploitation & Privilege Escalation"))
+        
+        # Configuration
+        config_group = QGroupBox("Post-Exploitation Configuration")
+        config_layout = QVBoxLayout()
+        config_group.setLayout(config_layout)
+        
+        # Privilege Escalation
+        privesc_group = QGroupBox("Privilege Escalation")
+        privesc_layout = QVBoxLayout()
+        privesc_group.setLayout(privesc_layout)
+        
+        self.privesc_enabled = QCheckBox("Enable Privilege Escalation")
+        self.privesc_enabled.setChecked(True)
+        privesc_layout.addWidget(self.privesc_enabled)
+        
+        attempts_layout = QHBoxLayout()
+        attempts_layout.addWidget(QLabel("Max Attempts:"))
+        self.privesc_max_attempts = QSpinBox()
+        self.privesc_max_attempts.setRange(1, 10)
+        self.privesc_max_attempts.setValue(3)
+        attempts_layout.addWidget(self.privesc_max_attempts)
+        attempts_layout.addStretch()
+        privesc_layout.addLayout(attempts_layout)
+        
+        config_layout.addWidget(privesc_group)
+        
+        # Credential Harvesting
+        cred_group = QGroupBox("Credential Harvesting")
+        cred_layout = QVBoxLayout()
+        cred_group.setLayout(cred_layout)
+        
+        self.cred_harvest_enabled = QCheckBox("Enable Credential Harvesting")
+        self.cred_harvest_enabled.setChecked(True)
+        cred_layout.addWidget(self.cred_harvest_enabled)
+        
+        self.cred_mimikatz = QCheckBox("Use Mimikatz/Pypykatz")
+        self.cred_mimikatz.setChecked(True)
+        cred_layout.addWidget(self.cred_mimikatz)
+        
+        self.cred_browser = QCheckBox("Browser Credential Dump")
+        self.cred_browser.setChecked(True)
+        cred_layout.addWidget(self.cred_browser)
+        
+        self.cred_memory = QCheckBox("Memory Scraping")
+        cred_layout.addWidget(self.cred_memory)
+        
+        config_layout.addWidget(cred_group)
+        
+        # Persistence
+        persist_group = QGroupBox("Persistence Installation")
+        persist_layout = QVBoxLayout()
+        persist_group.setLayout(persist_layout)
+        
+        self.persist_enabled = QCheckBox("Enable Persistence Mechanisms")
+        self.persist_enabled.setChecked(True)
+        persist_layout.addWidget(self.persist_enabled)
+        
+        self.persist_stealth = QCheckBox("Stealth Mode (Minimal Detection)")
+        self.persist_stealth.setChecked(True)
+        persist_layout.addWidget(self.persist_stealth)
+        
+        max_persist_layout = QHBoxLayout()
+        max_persist_layout.addWidget(QLabel("Max Mechanisms:"))
+        self.persist_max_mechanisms = QSpinBox()
+        self.persist_max_mechanisms.setRange(1, 5)
+        self.persist_max_mechanisms.setValue(3)
+        max_persist_layout.addWidget(self.persist_max_mechanisms)
+        max_persist_layout.addStretch()
+        persist_layout.addLayout(max_persist_layout)
+        
+        config_layout.addWidget(persist_group)
+        
+        layout.addWidget(config_group)
+        
+        # Results area
+        results_group = QGroupBox("Post-Exploitation Results")
+        results_layout = QVBoxLayout()
+        results_group.setLayout(results_layout)
+        
+        self.postexploit_results_text = QTextEdit()
+        self.postexploit_results_text.setReadOnly(True)
+        self.postexploit_results_text.setPlaceholderText("Post-exploitation results will appear here...\\n\\nPhase 4 requires Phase 3 results (successful exploits).\\nUse 'Run Phase 1→2→3→4→5' workflow from the Phases tab.")
+        results_layout.addWidget(self.postexploit_results_text)
+        
+        layout.addWidget(results_group)
+        
+        return widget
+    
+    def create_lateral_movement_tab(self):
+        """Create Phase 5: Lateral Movement tab"""
+        widget = QWidget()
+        layout = QVBoxLayout()
+        widget.setLayout(layout)
+        
+        layout.addWidget(QLabel("Phase 5: Lateral Movement & Domain Dominance"))
+        
+        # Configuration
+        config_group = QGroupBox("Lateral Movement Configuration")
+        config_layout = QVBoxLayout()
+        config_group.setLayout(config_layout)
+        
+        # Lateral Movement
+        lateral_group = QGroupBox("Lateral Movement")
+        lateral_layout = QVBoxLayout()
+        lateral_group.setLayout(lateral_layout)
+        
+        self.lateral_enabled = QCheckBox("Enable Lateral Movement")
+        self.lateral_enabled.setChecked(True)
+        lateral_layout.addWidget(self.lateral_enabled)
+        
+        hops_layout = QHBoxLayout()
+        hops_layout.addWidget(QLabel("Max Hops:"))
+        self.lateral_max_hops = QSpinBox()
+        self.lateral_max_hops.setRange(1, 10)
+        self.lateral_max_hops.setValue(5)
+        hops_layout.addWidget(self.lateral_max_hops)
+        hops_layout.addStretch()
+        lateral_layout.addLayout(hops_layout)
+        
+        self.lateral_stealth = QCheckBox("Stealth Mode")
+        self.lateral_stealth.setChecked(True)
+        lateral_layout.addWidget(self.lateral_stealth)
+        
+        config_layout.addWidget(lateral_group)
+        
+        # Active Directory Attacks
+        ad_group = QGroupBox("Active Directory Attacks")
+        ad_layout = QVBoxLayout()
+        ad_group.setLayout(ad_layout)
+        
+        self.ad_attacks_enabled = QCheckBox("Enable AD Attacks")
+        self.ad_attacks_enabled.setChecked(True)
+        ad_layout.addWidget(self.ad_attacks_enabled)
+        
+        self.ad_kerberoasting = QCheckBox("Kerberoasting")
+        self.ad_kerberoasting.setChecked(True)
+        ad_layout.addWidget(self.ad_kerberoasting)
+        
+        self.ad_asrep = QCheckBox("AS-REP Roasting")
+        self.ad_asrep.setChecked(True)
+        ad_layout.addWidget(self.ad_asrep)
+        
+        self.ad_dcsync = QCheckBox("DCSync")
+        ad_layout.addWidget(self.ad_dcsync)
+        
+        self.ad_bloodhound = QCheckBox("BloodHound Collection & Analysis")
+        self.ad_bloodhound.setChecked(True)
+        ad_layout.addWidget(self.ad_bloodhound)
+        
+        config_layout.addWidget(ad_group)
+        
+        # Domain Dominance
+        domain_group = QGroupBox("Domain Dominance")
+        domain_layout = QVBoxLayout()
+        domain_group.setLayout(domain_layout)
+        
+        self.domain_target_dc = QCheckBox("Target Domain Controllers")
+        self.domain_target_dc.setChecked(True)
+        domain_layout.addWidget(self.domain_target_dc)
+        
+        self.domain_krbtgt = QCheckBox("Extract KRBTGT Hash (Golden Ticket)")
+        domain_layout.addWidget(self.domain_krbtgt)
+        
+        config_layout.addWidget(domain_group)
+        
+        layout.addWidget(config_group)
+        
+        # Results area
+        results_group = QGroupBox("Lateral Movement Results")
+        results_layout = QVBoxLayout()
+        results_group.setLayout(results_layout)
+        
+        self.lateral_results_text = QTextEdit()
+        self.lateral_results_text.setReadOnly(True)
+        self.lateral_results_text.setPlaceholderText("Lateral movement results will appear here...\\n\\nPhase 5 requires Phase 4 results (compromised hosts + credentials).\\nUse 'Run Phase 1→2→3→4→5' workflow from the Phases tab.")
+        results_layout.addWidget(self.lateral_results_text)
+        
+        layout.addWidget(results_group)
         
         return widget
     
@@ -1479,6 +1709,217 @@ class MainWindow(QMainWindow):
         
         return widget
     
+    def create_vulnerability_scanning_tab(self):
+        """Create Phase 2 Vulnerability Scanning tab"""
+        widget = QWidget()
+        layout = QVBoxLayout()
+        widget.setLayout(layout)
+        
+        # Title and description
+        title_label = QLabel("Phase 2: Advanced Scanning & Vulnerability Assessment")
+        title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #f85149; margin-bottom: 5px;")
+        layout.addWidget(title_label)
+        
+        desc_label = QLabel("Discover vulnerabilities using web scanners, CVE correlation, and security testing tools")
+        desc_label.setStyleSheet("color: #8b949e; font-size: 11px; margin-bottom: 10px;")
+        layout.addWidget(desc_label)
+        
+        # Phase 1 Integration
+        phase1_group = QGroupBox("📥 Phase 1 Integration")
+        phase1_layout = QVBoxLayout()
+        phase1_group.setLayout(phase1_layout)
+        
+        phase1_info = QLabel("Phase 2 automatically consumes Phase 1 reconnaissance results to create an intelligent scan plan.")
+        phase1_info.setStyleSheet("color: #8b949e; font-size: 10px; margin-bottom: 5px;")
+        phase1_layout.addWidget(phase1_info)
+        
+        phase1_buttons = QHBoxLayout()
+        
+        self.load_phase1_button = QPushButton("📂 Load Phase 1 Results")
+        self.load_phase1_button.clicked.connect(self.load_phase1_results_for_phase2)
+        phase1_buttons.addWidget(self.load_phase1_button)
+        
+        self.phase1_status_label = QLabel("No Phase 1 data loaded")
+        self.phase1_status_label.setStyleSheet("color: #8b949e; font-size: 10px; font-style: italic;")
+        phase1_buttons.addWidget(self.phase1_status_label)
+        phase1_buttons.addStretch()
+        
+        phase1_layout.addLayout(phase1_buttons)
+        layout.addWidget(phase1_group)
+        
+        # Scan Configuration
+        config_group = QGroupBox("⚙️ Scan Configuration")
+        config_layout = QVBoxLayout()
+        config_group.setLayout(config_layout)
+        
+        # Scan mode
+        mode_layout = QHBoxLayout()
+        mode_layout.addWidget(QLabel("Scan Mode:"))
+        self.phase2_scan_mode = QComboBox()
+        self.phase2_scan_mode.addItems([
+            "Quick - Fast vulnerability detection",
+            "Balanced - Moderate depth and speed",
+            "Deep - Comprehensive vulnerability analysis",
+            "Aggressive - Maximum coverage (may be noisy)"
+        ])
+        self.phase2_scan_mode.setCurrentIndex(1)
+        mode_layout.addWidget(self.phase2_scan_mode)
+        config_layout.addLayout(mode_layout)
+        
+        # Stealth mode
+        self.phase2_stealth_checkbox = QCheckBox("🕶️ Stealth Mode (IDS/IPS evasion)")
+        self.phase2_stealth_checkbox.setToolTip("Use evasion techniques to avoid detection")
+        config_layout.addWidget(self.phase2_stealth_checkbox)
+        
+        layout.addWidget(config_group)
+        
+        # Scan Tools Selection
+        tools_group = QGroupBox("🛠️ Vulnerability Scanners")
+        tools_layout = QVBoxLayout()
+        tools_group.setLayout(tools_layout)
+        
+        tools_desc = QLabel("Select which vulnerability scanners to use:")
+        tools_desc.setStyleSheet("color: #8b949e; font-size: 10px; margin-bottom: 5px;")
+        tools_layout.addWidget(tools_desc)
+        
+        # Create checkboxes for each scanner
+        self.phase2_tool_checkboxes = {}
+        
+        scanner_options = [
+            ('web_scan', '🌐 Web Application Scanning (SQLi, XSS, etc.)', True),
+            ('cve_match', '🔍 CVE Correlation (Match services to vulnerabilities)', True),
+            ('ssl_test', '🔒 SSL/TLS Testing (Certificate and cipher analysis)', True),
+            ('network_vuln', '🌍 Network Vulnerability Scanning (Service-specific tests)', True),
+            ('default_creds', '🔑 Default Credentials Testing', False),
+        ]
+        
+        for tool_id, tool_label, default_checked in scanner_options:
+            checkbox = QCheckBox(tool_label)
+            checkbox.setChecked(default_checked)
+            self.phase2_tool_checkboxes[tool_id] = checkbox
+            tools_layout.addWidget(checkbox)
+        
+        layout.addWidget(tools_group)
+        
+        # Control Buttons
+        control_layout = QHBoxLayout()
+        
+        self.start_phase2_button = QPushButton("🚀 Start Vulnerability Scan")
+        self.start_phase2_button.clicked.connect(self.start_phase2_scan)
+        self.start_phase2_button.setStyleSheet("""
+            QPushButton {
+                background-color: #f85149;
+                color: white;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #da3633;
+            }
+            QPushButton:hover {
+                background-color: #da3633;
+                border-color: #f85149;
+            }
+        """)
+        control_layout.addWidget(self.start_phase2_button)
+        
+        self.stop_phase2_button = QPushButton("⛔ Stop")
+        self.stop_phase2_button.clicked.connect(self.stop_phase2_scan)
+        self.stop_phase2_button.setEnabled(False)
+        self.stop_phase2_button.setStyleSheet("""
+            QPushButton {
+                background-color: #6e7681;
+                color: white;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+        """)
+        control_layout.addWidget(self.stop_phase2_button)
+        
+        self.export_phase2_button = QPushButton("📄 Export Results")
+        self.export_phase2_button.clicked.connect(self.export_phase2_results)
+        self.export_phase2_button.setEnabled(False)
+        self.export_phase2_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6feb;
+                color: white;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+        """)
+        control_layout.addWidget(self.export_phase2_button)
+        
+        layout.addLayout(control_layout)
+        
+        # Progress
+        progress_layout = QHBoxLayout()
+        self.phase2_progress_label = QLabel("Ready to scan")
+        self.phase2_progress_label.setStyleSheet("color: #7ee787; font-size: 11px;")
+        progress_layout.addWidget(self.phase2_progress_label)
+        
+        self.phase2_progress_bar = QProgressBar()
+        self.phase2_progress_bar.hide()
+        progress_layout.addWidget(self.phase2_progress_bar)
+        
+        layout.addLayout(progress_layout)
+        
+        # Results Display
+        results_group = QGroupBox("🎯 Vulnerability Findings")
+        results_layout = QVBoxLayout()
+        results_group.setLayout(results_layout)
+        
+        # Results tabs
+        results_tabs = QTabWidget()
+        
+        # Vulnerabilities view
+        self.phase2_vulns_text = QTextEdit()
+        self.phase2_vulns_text.setReadOnly(True)
+        self.phase2_vulns_text.setStyleSheet("""
+            background-color: #010409;
+            color: #f85149;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        results_tabs.addTab(self.phase2_vulns_text, "🔴 Vulnerabilities")
+        
+        # Statistics view
+        self.phase2_stats_text = QTextEdit()
+        self.phase2_stats_text.setReadOnly(True)
+        self.phase2_stats_text.setStyleSheet("""
+            background-color: #010409;
+            color: #7ee787;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        results_tabs.addTab(self.phase2_stats_text, "📊 Statistics")
+        
+        # JSON view
+        self.phase2_json_text = QTextEdit()
+        self.phase2_json_text.setReadOnly(True)
+        self.phase2_json_text.setStyleSheet("""
+            background-color: #010409;
+            color: #c9d1d9;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 10px;
+            border: 1px solid #30363d;
+            padding: 8px;
+        """)
+        results_tabs.addTab(self.phase2_json_text, "{ } JSON")
+        
+        results_layout.addWidget(results_tabs)
+        layout.addWidget(results_group)
+        
+        # Store Phase 2 results
+        self.phase2_results = None
+        self.phase1_data_for_phase2 = None
+        
+        return widget
+    
     def create_tools_tab(self):
         """Create tools status tab"""
         widget = QWidget()
@@ -2002,18 +2443,18 @@ class MainWindow(QMainWindow):
     
     def quick_select_phases(self, selection_type):
         """Quick phase selection"""
-        if selection_type == 'all' or selection_type == 'complete':
-            phases = ['phase1', 'phase2', 'phase3', 'phase4', 'phase5', 'phase6', 
-                     'phase7', 'phase8', 'phase9', 'phase10', 'phase11', 'phase12']
-        elif selection_type == 'recon':
+        if selection_type == 'recon':
+            phases = ['phase1']
+        elif selection_type == 'vulnscan':
             phases = ['phase1', 'phase2']
         elif selection_type == 'exploit':
+            phases = ['phase1', 'phase2', 'phase3']
+        elif selection_type == 'postexploit':
+            phases = ['phase1', 'phase2', 'phase3', 'phase4']
+        elif selection_type == 'complete':
             phases = ['phase1', 'phase2', 'phase3', 'phase4', 'phase5']
-        elif selection_type == 'attack':
-            phases = ['phase1', 'phase2', 'phase3', 'phase4', 'phase5', 'phase6', 'phase7', 'phase8']
-        elif selection_type == 'advanced':
-            phases = ['phase1', 'phase2', 'phase3', 'phase4', 'phase5', 'phase6', 
-                     'phase7', 'phase8', 'phase9', 'phase10']
+        elif selection_type == 'ai':
+            phases = ['phase12']
         else:
             return
         
@@ -3150,6 +3591,352 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(self, "Export Successful", f"Results exported to:\n{file_path}")
             except Exception as e:
                 QMessageBox.critical(self, "Export Failed", f"Failed to export results:\n{str(e)}")
+    
+    # Phase 2 Vulnerability Scanning Methods
+    
+    def load_phase1_results_for_phase2(self):
+        """Load Phase 1 results from file for Phase 2"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Load Phase 1 Results",
+            "reports/phase1",
+            "JSON Files (*.json);;All Files (*)"
+        )
+        
+        if file_path:
+            try:
+                with open(file_path, 'r') as f:
+                    self.phase1_data_for_phase2 = json.load(f)
+                
+                self.phase1_status_label.setText(f"✅ Loaded: {os.path.basename(file_path)}")
+                self.phase1_status_label.setStyleSheet("color: #7ee787; font-size: 10px;")
+                QMessageBox.information(self, "Success", "Phase 1 results loaded successfully!")
+                
+            except Exception as e:
+                QMessageBox.critical(self, "Load Failed", f"Failed to load Phase 1 results:\n{str(e)}")
+                self.phase1_status_label.setText("❌ Load failed")
+                self.phase1_status_label.setStyleSheet("color: #f85149; font-size: 10px;")
+    
+    def start_phase2_scan(self):
+        """Start Phase 2 vulnerability scanning"""
+        # Check if Phase 1 data is loaded
+        if not self.phase1_data_for_phase2:
+            # Try to use current reconnaissance results
+            if hasattr(self, 'current_recon_results') and self.current_recon_results:
+                self.phase1_data_for_phase2 = self.current_recon_results
+            else:
+                reply = QMessageBox.question(
+                    self,
+                    "No Phase 1 Data",
+                    "No Phase 1 reconnaissance data loaded. Continue anyway?\n\n"
+                    "Without Phase 1 data, Phase 2 will have limited targets.",
+                    QMessageBox.Yes | QMessageBox.No
+                )
+                if reply == QMessageBox.No:
+                    return
+        
+        # Get configuration
+        scan_mode_text = self.phase2_scan_mode.currentText()
+        scan_mode = scan_mode_text.split(' - ')[0].lower()  # Extract mode name
+        
+        stealth_mode = self.phase2_stealth_checkbox.isChecked()
+        
+        # Get selected tools
+        selected_tools = {
+            'enable_web_scanning': self.phase2_tool_checkboxes['web_scan'].isChecked(),
+            'enable_cve_matching': self.phase2_tool_checkboxes['cve_match'].isChecked(),
+            'enable_ssl_testing': self.phase2_tool_checkboxes['ssl_test'].isChecked(),
+            'enable_network_vuln': self.phase2_tool_checkboxes['network_vuln'].isChecked(),
+            'enable_default_creds': self.phase2_tool_checkboxes['default_creds'].isChecked(),
+        }
+        
+        # Update UI
+        self.start_phase2_button.setEnabled(False)
+        self.stop_phase2_button.setEnabled(True)
+        self.export_phase2_button.setEnabled(False)
+        self.phase2_progress_bar.setRange(0, 0)  # Indeterminate
+        self.phase2_progress_bar.show()
+        self.phase2_progress_label.setText("Initializing Phase 2 scan...")
+        
+        # Clear previous results
+        self.phase2_vulns_text.clear()
+        self.phase2_stats_text.clear()
+        self.phase2_json_text.clear()
+        
+        # Start scan in background
+        from PyQt5.QtCore import QThread, pyqtSignal
+        import asyncio
+        
+        class Phase2Worker(QThread):
+            """Worker thread for Phase 2 scanning"""
+            finished = pyqtSignal(dict)
+            error = pyqtSignal(str)
+            progress = pyqtSignal(str, object)  # message, progress_obj
+            
+            def __init__(self, phase1_data, config):
+                super().__init__()
+                self.phase1_data = phase1_data
+                self.config = config
+            
+            def run(self):
+                """Run Phase 2 scan in background"""
+                try:
+                    from core.phase2_orchestrator import Phase2Orchestrator
+                    
+                    # Create orchestrator
+                    orchestrator = Phase2Orchestrator(self.config)
+                    
+                    # Load Phase 1 data if available
+                    if self.phase1_data:
+                        orchestrator.load_phase1_results(self.phase1_data)
+                    
+                    # Create scan plan
+                    orchestrator.create_scan_plan()
+                    
+                    # Execute scan with progress callback
+                    def progress_callback(progress):
+                        self.progress.emit(
+                            f"Progress: {progress.percentage:.1f}% | "
+                            f"Completed: {progress.completed_tasks}/{progress.total_tasks} | "
+                            f"Vulnerabilities: {progress.vulnerabilities_found} | "
+                            f"ETA: {progress.eta_formatted}",
+                            progress
+                        )
+                    
+                    # Run async scan
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    results = loop.run_until_complete(
+                        orchestrator.execute_scan_plan(callback=progress_callback)
+                    )
+                    loop.close()
+                    
+                    self.finished.emit(results)
+                    
+                except Exception as e:
+                    logger.error(f"Phase 2 scan error: {e}", exc_info=True)
+                    self.error.emit(str(e))
+        
+        # Create and start worker
+        config = {
+            'scan_mode': scan_mode,
+            'stealth_mode': stealth_mode,
+            **selected_tools
+        }
+        
+        self.phase2_worker = Phase2Worker(self.phase1_data_for_phase2, config)
+        self.phase2_worker.progress.connect(self.on_phase2_progress)
+        self.phase2_worker.finished.connect(self.on_phase2_finished)
+        self.phase2_worker.error.connect(self.on_phase2_error)
+        self.phase2_worker.start()
+        
+        logger.info("Phase 2 vulnerability scan started")
+    
+    def stop_phase2_scan(self):
+        """Stop Phase 2 scan"""
+        if hasattr(self, 'phase2_worker') and self.phase2_worker.isRunning():
+            self.phase2_worker.terminate()
+            self.phase2_worker.wait()
+            
+            self.phase2_progress_label.setText("Scan stopped by user")
+            self.phase2_progress_bar.hide()
+            self.start_phase2_button.setEnabled(True)
+            self.stop_phase2_button.setEnabled(False)
+    
+    def on_phase2_progress(self, message: str, progress):
+        """Handle Phase 2 progress updates"""
+        self.phase2_progress_label.setText(message)
+        
+        if progress:
+            self.phase2_progress_bar.setRange(0, progress.total_tasks)
+            self.phase2_progress_bar.setValue(progress.completed_tasks)
+    
+    def on_phase2_finished(self, results: Dict[str, Any]):
+        """Handle Phase 2 scan completion"""
+        self.phase2_results = results
+        
+        # Update UI
+        self.phase2_progress_bar.hide()
+        self.start_phase2_button.setEnabled(True)
+        self.stop_phase2_button.setEnabled(False)
+        self.export_phase2_button.setEnabled(True)
+        
+        # Display vulnerabilities
+        vuln_summary = results.get('vulnerability_summary', {})
+        vulns = results.get('vulnerabilities', [])
+        
+        self.phase2_vulns_text.append("=" * 80)
+        self.phase2_vulns_text.append(f"🎯 PHASE 2 VULNERABILITY SCAN COMPLETE")
+        self.phase2_vulns_text.append("=" * 80)
+        self.phase2_vulns_text.append(f"Total Vulnerabilities: {vuln_summary.get('total', 0)}")
+        self.phase2_vulns_text.append(f"  🔴 Critical: {vuln_summary.get('critical', 0)}")
+        self.phase2_vulns_text.append(f"  🟠 High: {vuln_summary.get('high', 0)}")
+        self.phase2_vulns_text.append(f"  🟡 Medium: {vuln_summary.get('medium', 0)}")
+        self.phase2_vulns_text.append(f"  🟢 Low: {vuln_summary.get('low', 0)}")
+        self.phase2_vulns_text.append("=" * 80 + "\n")
+        
+        # List vulnerabilities
+        for vuln in vulns[:50]:  # Show first 50
+            severity_icon = {
+                'critical': '🔴',
+                'high': '🟠',
+                'medium': '🟡',
+                'low': '🟢',
+                'info': '🔵'
+            }.get(vuln.get('severity', 'info').lower(), '⚪')
+            
+            self.phase2_vulns_text.append(f"{severity_icon} [{vuln.get('severity', 'UNKNOWN').upper()}] {vuln.get('title', 'Unknown')}")
+            self.phase2_vulns_text.append(f"   ID: {vuln.get('vuln_id', 'N/A')}")
+            self.phase2_vulns_text.append(f"   Target: {vuln.get('affected_target', 'N/A')}")
+            if vuln.get('cvss_score'):
+                self.phase2_vulns_text.append(f"   CVSS: {vuln.get('cvss_score')}")
+            if vuln.get('exploit_available'):
+                self.phase2_vulns_text.append(f"   ⚡ Exploit Available!")
+            self.phase2_vulns_text.append("")
+        
+        if len(vulns) > 50:
+            self.phase2_vulns_text.append(f"... and {len(vulns) - 50} more vulnerabilities (see JSON export)")
+        
+        # Display statistics
+        scan_summary = results.get('scan_summary', {})
+        
+        self.phase2_stats_text.append("📊 SCAN STATISTICS")
+        self.phase2_stats_text.append("=" * 60)
+        self.phase2_stats_text.append(f"Total Tasks: {scan_summary.get('total_tasks', 0)}")
+        self.phase2_stats_text.append(f"Completed: {scan_summary.get('completed_tasks', 0)}")
+        self.phase2_stats_text.append(f"Failed: {scan_summary.get('failed_tasks', 0)}")
+        self.phase2_stats_text.append(f"Skipped: {scan_summary.get('skipped_tasks', 0)}")
+        self.phase2_stats_text.append(f"Duration: {scan_summary.get('scan_duration', 0):.1f} seconds")
+        self.phase2_stats_text.append(f"Mode: {scan_summary.get('scan_mode', 'unknown')}")
+        self.phase2_stats_text.append("")
+        
+        # Recommendations
+        recommendations = results.get('recommendations', [])
+        if recommendations:
+            self.phase2_stats_text.append("🎯 RECOMMENDATIONS")
+            self.phase2_stats_text.append("=" * 60)
+            for rec in recommendations:
+                priority_icon = {'critical': '🔴', 'high': '🟠', 'medium': '🟡'}.get(rec.get('priority'), '⚪')
+                self.phase2_stats_text.append(f"{priority_icon} {rec.get('message', '')}")
+                self.phase2_stats_text.append(f"   Target: {rec.get('target', '')}")
+                self.phase2_stats_text.append("")
+        
+        # JSON output
+        self.phase2_json_text.setText(json.dumps(results, indent=2))
+        
+        # Update progress label
+        self.phase2_progress_label.setText(
+            f"✅ Scan complete! Found {vuln_summary.get('total', 0)} vulnerabilities "
+            f"({vuln_summary.get('critical', 0)} critical, {vuln_summary.get('high', 0)} high)"
+        )
+        
+        logger.success(f"Phase 2 scan complete - {vuln_summary.get('total', 0)} vulnerabilities found")
+    
+    def on_phase2_error(self, error_msg: str):
+        """Handle Phase 2 scan error"""
+        self.phase2_progress_bar.hide()
+        self.start_phase2_button.setEnabled(True)
+        self.stop_phase2_button.setEnabled(False)
+        self.phase2_progress_label.setText(f"❌ Error: {error_msg}")
+        
+        self.phase2_vulns_text.append(f"ERROR: {error_msg}")
+        QMessageBox.critical(self, "Scan Error", f"Phase 2 scan failed:\n{error_msg}")
+        logger.error(f"Phase 2 scan error: {error_msg}")
+    
+    def export_phase2_results(self):
+        """Export Phase 2 vulnerability scan results"""
+        if not self.phase2_results:
+            QMessageBox.warning(self, "No Results", "No Phase 2 results to export")
+            return
+        
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Phase 2 Results",
+            f"phase2_vulnscan_results.json",
+            "JSON Files (*.json);;Text Files (*.txt);;HTML Files (*.html);;All Files (*)"
+        )
+        
+        if file_path:
+            try:
+                if file_path.endswith('.json'):
+                    with open(file_path, 'w') as f:
+                        json.dump(self.phase2_results, f, indent=2)
+                elif file_path.endswith('.html'):
+                    # Generate HTML report
+                    html_content = self._generate_phase2_html_report(self.phase2_results)
+                    with open(file_path, 'w') as f:
+                        f.write(html_content)
+                else:
+                    # Text format
+                    with open(file_path, 'w') as f:
+                        f.write(self.phase2_vulns_text.toPlainText())
+                        f.write("\n\n" + "=" * 80 + "\n\n")
+                        f.write(self.phase2_stats_text.toPlainText())
+                
+                QMessageBox.information(self, "Export Successful", f"Results exported to:\n{file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Export Failed", f"Failed to export results:\n{str(e)}")
+    
+    def _generate_phase2_html_report(self, results: Dict[str, Any]) -> str:
+        """Generate HTML report for Phase 2 results"""
+        vuln_summary = results.get('vulnerability_summary', {})
+        vulns = results.get('vulnerabilities', [])
+        
+        html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>Phase 2 Vulnerability Scan Report</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }}
+        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 20px; }}
+        h1 {{ color: #d9534f; }}
+        .summary {{ background: #f8d7da; padding: 15px; border-left: 4px solid #d9534f; margin: 20px 0; }}
+        .vuln {{ background: #fff; border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 4px; }}
+        .critical {{ border-left: 4px solid #d9534f; }}
+        .high {{ border-left: 4px solid #ff9800; }}
+        .medium {{ border-left: 4px solid #ffeb3b; }}
+        .low {{ border-left: 4px solid #4caf50; }}
+        .severity {{ display: inline-block; padding: 4px 8px; border-radius: 3px; color: white; font-weight: bold; }}
+        .severity.critical {{ background: #d9534f; }}
+        .severity.high {{ background: #ff9800; }}
+        .severity.medium {{ background: #ffeb3b; color: #333; }}
+        .severity.low {{ background: #4caf50; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Phase 2: Vulnerability Scan Report</h1>
+        <div class="summary">
+            <h2>Summary</h2>
+            <p><strong>Total Vulnerabilities:</strong> {vuln_summary.get('total', 0)}</p>
+            <p>🔴 Critical: {vuln_summary.get('critical', 0)} | 
+               🟠 High: {vuln_summary.get('high', 0)} | 
+               🟡 Medium: {vuln_summary.get('medium', 0)} | 
+               🟢 Low: {vuln_summary.get('low', 0)}</p>
+        </div>
+        <h2>Vulnerabilities</h2>
+"""
+        
+        for vuln in vulns:
+            severity = vuln.get('severity', 'info').lower()
+            html += f"""
+        <div class="vuln {severity}">
+            <h3><span class="severity {severity}">{severity.upper()}</span> {vuln.get('title', 'Unknown')}</h3>
+            <p><strong>ID:</strong> {vuln.get('vuln_id', 'N/A')}</p>
+            <p><strong>Target:</strong> {vuln.get('affected_target', 'N/A')}</p>
+            <p><strong>Description:</strong> {vuln.get('description', 'No description')}</p>
+            {f"<p><strong>CVSS Score:</strong> {vuln.get('cvss_score')}</p>" if vuln.get('cvss_score') else ''}
+            {f"<p><strong>⚡ Exploit Available!</strong></p>" if vuln.get('exploit_available') else ''}
+            <p><strong>Remediation:</strong> {vuln.get('remediation', 'See vendor advisory')}</p>
+        </div>
+"""
+        
+        html += """
+    </div>
+</body>
+</html>
+"""
+        return html
     
     # OSINT Investigation Methods
     
