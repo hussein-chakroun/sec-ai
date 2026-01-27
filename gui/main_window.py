@@ -263,48 +263,44 @@ class MainWindow(QMainWindow):
         tabs = QTabWidget()
         main_layout.addWidget(tabs)
         
-        # Tab 1: Pentest
+        # Tab 1: Pentest (with integrated phase selection)
         pentest_tab = self.create_pentest_tab()
         tabs.addTab(pentest_tab, "🎯 Pentest")
         
-        # Tab 2: Phase Selection
-        phase_tab = self.create_phase_selection_tab()
-        tabs.addTab(phase_tab, "⚙️ Phases")
-        
-        # Tab 3: Configuration
+        # Tab 2: Configuration
         config_tab = self.create_config_tab()
         tabs.addTab(config_tab, "🔧 Configuration")
         
-        # Tab 4: Phase 1 Reconnaissance
+        # Tab 3: Phase 1 Reconnaissance
         recon_tab = self.create_reconnaissance_tab()
         tabs.addTab(recon_tab, "🔍 Phase 1: Recon")
         
-        # Tab 5: Phase 2 Vulnerability Scanning
+        # Tab 4: Phase 2 Vulnerability Scanning
         vuln_scan_tab = self.create_vulnerability_scanning_tab()
         tabs.addTab(vuln_scan_tab, "🎯 Phase 2: Vuln Scan")
         
-        # Tab 6: Phase 3 Exploitation
+        # Tab 5: Phase 3 Exploitation
         exploitation_tab = self.create_exploitation_tab()
         tabs.addTab(exploitation_tab, "💣 Phase 3: Exploitation")
         
-        # Tab 7: Phase 4 Post-Exploitation
+        # Tab 6: Phase 4 Post-Exploitation
         postexploit_tab = self.create_postexploitation_tab()
         tabs.addTab(postexploit_tab, "🔓 Phase 4: Post-Exploit")
         
-        # Tab 8: Phase 5 Lateral Movement
+        # Tab 7: Phase 5 Lateral Movement
         lateral_tab = self.create_lateral_movement_tab()
         tabs.addTab(lateral_tab, "🌐 Phase 5: Lateral Movement")
         
-        # Tab 9: Phase 12 AI Adaptive Exploitation
+        # Tab 8: Phase 12 AI Adaptive Exploitation
         ai_tab = self.create_ai_adaptive_tab()
         tabs.addTab(ai_tab, "🤖 Phase 12: AI Adaptive")
         
-        # Tab 10: Tools Status
+        # Tab 9: Tools Status
         tools_tab = self.create_tools_tab()
         tabs.addTab(tools_tab, "🛠️ Tools Status")
     
     def create_pentest_tab(self):
-        """Create pentest tab"""
+        """Create comprehensive pentest tab with phase selection"""
         widget = QWidget()
         layout = QVBoxLayout()
         widget.setLayout(layout)
@@ -315,88 +311,106 @@ class MainWindow(QMainWindow):
         target_group.setLayout(target_layout)
         
         target_input_layout = QHBoxLayout()
-        target_input_layout.addWidget(QLabel("Target:"))
+        target_input_layout.addWidget(QLabel("Target (URL/IP):"))
         self.target_input = QLineEdit()
         self.target_input.setPlaceholderText("192.168.1.1 or example.com or http://target.com")
         target_input_layout.addWidget(self.target_input)
         target_layout.addLayout(target_input_layout)
         
-        # Advanced options
-        advanced_layout = QHBoxLayout()
-        
+        # Iterations
         iterations_layout = QHBoxLayout()
         iterations_layout.addWidget(QLabel("Max Iterations:"))
         self.iterations_input = QSpinBox()
         self.iterations_input.setMinimum(1)
         self.iterations_input.setMaximum(100)
         self.iterations_input.setValue(10)
-        self.iterations_input.setToolTip("Number of autonomous scanning iterations (1-100)")
+        self.iterations_input.setToolTip("Number of autonomous scanning iterations per phase (1-100)")
         iterations_layout.addWidget(self.iterations_input)
-        advanced_layout.addLayout(iterations_layout)
+        iterations_layout.addStretch()
+        target_layout.addLayout(iterations_layout)
         
-        aggressive_layout = QHBoxLayout()
-        self.aggressive_checkbox = QCheckBox("Aggressive Scanning")
-        self.aggressive_checkbox.setToolTip("Enable more intensive scanning techniques")
-        aggressive_layout.addWidget(self.aggressive_checkbox)
-        advanced_layout.addLayout(aggressive_layout)
-        
-        stealth_layout = QHBoxLayout()
-        self.stealth_checkbox = QCheckBox("Stealth Mode (Phase 4)")
-        self.stealth_checkbox.setToolTip("Enable evasion techniques")
-        stealth_layout.addWidget(self.stealth_checkbox)
-        advanced_layout.addLayout(stealth_layout)
-        
-        target_layout.addLayout(advanced_layout)
         layout.addWidget(target_group)
         
-        # Quick Phase Selection
-        quick_phase_group = QGroupBox("Quick Phase Selection")
-        quick_phase_layout = QVBoxLayout()
-        quick_phase_group.setLayout(quick_phase_layout)
+        # Phase Selection with validation
+        phase_selection_group = QGroupBox("Phase Selection (Sequential Dependency)")
+        phase_selection_layout = QVBoxLayout()
+        phase_selection_group.setLayout(phase_selection_layout)
         
-        phase_buttons_layout1 = QHBoxLayout()
+        info_label = QLabel("⚠️ Phases must be run sequentially. You cannot skip prerequisite phases.")
+        info_label.setStyleSheet("color: #d29922; font-size: 11px; margin-bottom: 5px;")
+        info_label.setWordWrap(True)
+        phase_selection_layout.addWidget(info_label)
         
-        recon_only_btn = QPushButton("🔍 Recon Only (Phase 1)")
-        recon_only_btn.clicked.connect(lambda: self.quick_select_phases('recon'))
-        phase_buttons_layout1.addWidget(recon_only_btn)
+        # Create phase checkboxes with dependencies
+        self.phase_selection_checkboxes = {}
         
-        vuln_scan_btn = QPushButton("🎯 Recon + Vuln Scan (1→2)")
-        vuln_scan_btn.clicked.connect(lambda: self.quick_select_phases('vulnscan'))
-        phase_buttons_layout1.addWidget(vuln_scan_btn)
+        phases_info = [
+            (1, "Phase 1: Reconnaissance & Information Gathering", "Port scanning, service enumeration, OSINT", True),
+            (2, "Phase 2: Vulnerability Scanning & Analysis", "Web scanning, CVE detection, vulnerability correlation", False),
+            (3, "Phase 3: Exploitation & System Compromise", "LLM-driven exploits, Metasploit integration, custom payloads", False),
+            (4, "Phase 4: Post-Exploitation & Privilege Escalation", "Credential harvesting, privilege escalation, persistence", False),
+            (5, "Phase 5: Lateral Movement & Domain Dominance", "Network spreading, Active Directory attacks, domain takeover", False),
+        ]
         
-        exploit_btn = QPushButton("💥 Through Exploitation (1→2→3)")
-        exploit_btn.clicked.connect(lambda: self.quick_select_phases('exploit'))
-        phase_buttons_layout1.addWidget(exploit_btn)
+        for phase_num, phase_name, phase_desc, default_checked in phases_info:
+            phase_container = QGroupBox()
+            phase_container_layout = QVBoxLayout()
+            phase_container.setLayout(phase_container_layout)
+            
+            checkbox = QCheckBox(phase_name)
+            checkbox.setChecked(default_checked)
+            checkbox.setStyleSheet("font-weight: bold; font-size: 12px;")
+            checkbox.stateChanged.connect(lambda state, p=phase_num: self.on_phase_checkbox_changed(p, state))
+            self.phase_selection_checkboxes[phase_num] = checkbox
+            phase_container_layout.addWidget(checkbox)
+            
+            desc = QLabel(f"   {phase_desc}")
+            desc.setStyleSheet("color: #8b949e; font-size: 10px; margin-left: 20px;")
+            desc.setWordWrap(True)
+            phase_container_layout.addWidget(desc)
+            
+            phase_selection_layout.addWidget(phase_container)
         
-        quick_phase_layout.addLayout(phase_buttons_layout1)
+        # Quick selection buttons
+        quick_select_layout = QHBoxLayout()
+        quick_select_layout.addWidget(QLabel("Quick Select:"))
         
-        phase_buttons_layout2 = QHBoxLayout()
+        phase1_only = QPushButton("Phase 1 Only")
+        phase1_only.clicked.connect(lambda: self.quick_phase_select([1]))
+        quick_select_layout.addWidget(phase1_only)
         
-        postexploit_btn = QPushButton("🔓 Through Post-Exploit (1→2→3→4)")
-        postexploit_btn.clicked.connect(lambda: self.quick_select_phases('postexploit'))
-        phase_buttons_layout2.addWidget(postexploit_btn)
+        phase1_2 = QPushButton("1→2")
+        phase1_2.clicked.connect(lambda: self.quick_phase_select([1, 2]))
+        quick_select_layout.addWidget(phase1_2)
         
-        complete_btn = QPushButton("🔥 Complete Pentest (1→2→3→4→5)")
-        complete_btn.clicked.connect(lambda: self.quick_select_phases('complete'))
-        phase_buttons_layout2.addWidget(complete_btn)
+        phase1_3 = QPushButton("1→2→3")
+        phase1_3.clicked.connect(lambda: self.quick_phase_select([1, 2, 3]))
+        quick_select_layout.addWidget(phase1_3)
         
-        ai_adaptive_btn = QPushButton("🤖 AI Adaptive (Phase 12)")
-        ai_adaptive_btn.clicked.connect(lambda: self.quick_select_phases('ai'))
-        phase_buttons_layout2.addWidget(ai_adaptive_btn)
+        phase1_4 = QPushButton("1→2→3→4")
+        phase1_4.clicked.connect(lambda: self.quick_phase_select([1, 2, 3, 4]))
+        quick_select_layout.addWidget(phase1_4)
         
-        quick_phase_layout.addLayout(phase_buttons_layout2)
-        layout.addWidget(quick_phase_group)
+        full_pentest = QPushButton("Full (1→2→3→4→5)")
+        full_pentest.clicked.connect(lambda: self.quick_phase_select([1, 2, 3, 4, 5]))
+        full_pentest.setStyleSheet("font-weight: bold;")
+        quick_select_layout.addWidget(full_pentest)
+        
+        quick_select_layout.addStretch()
+        phase_selection_layout.addLayout(quick_select_layout)
+        
+        layout.addWidget(phase_selection_group)
         
         # Control buttons
         button_layout = QHBoxLayout()
         
         self.start_button = QPushButton("🚀 Start Pentest")
-        self.start_button.clicked.connect(self.start_pentest)
+        self.start_button.clicked.connect(self.start_comprehensive_pentest)
         self.start_button.setStyleSheet("""
             QPushButton {
                 background-color: #238636;
                 color: white;
-                padding: 10px;
+                padding: 12px;
                 font-size: 14px;
                 font-weight: bold;
                 border: 1px solid #2ea043;
@@ -409,13 +423,13 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(self.start_button)
         
         self.stop_button = QPushButton("⛔ Stop")
-        self.stop_button.clicked.connect(self.stop_pentest)
+        self.stop_button.clicked.connect(self.stop_comprehensive_pentest)
         self.stop_button.setEnabled(False)
         self.stop_button.setStyleSheet("""
             QPushButton {
                 background-color: #da3633;
                 color: white;
-                padding: 10px;
+                padding: 12px;
                 font-size: 14px;
                 font-weight: bold;
                 border: 1px solid #f85149;
@@ -428,13 +442,13 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(self.stop_button)
         
         self.export_button = QPushButton("📄 Export Report")
-        self.export_button.clicked.connect(self.export_report)
+        self.export_button.clicked.connect(self.export_comprehensive_report)
         self.export_button.setEnabled(False)
         self.export_button.setStyleSheet("""
             QPushButton {
                 background-color: #1f6feb;
                 color: white;
-                padding: 10px;
+                padding: 12px;
                 font-size: 14px;
                 font-weight: bold;
                 border: 1px solid #58a6ff;
@@ -450,25 +464,38 @@ class MainWindow(QMainWindow):
         
         # Progress bar
         self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0)  # Indeterminate
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
         self.progress_bar.hide()
         layout.addWidget(self.progress_bar)
         
-        # Output area
-        output_group = QGroupBox("Pentest Output")
+        # Console Output area (bigger)
+        output_group = QGroupBox("Console Output - Detailed Logging")
         output_layout = QVBoxLayout()
         output_group.setLayout(output_layout)
         
         self.output_text = QTextEdit()
         self.output_text.setReadOnly(True)
+        self.output_text.setMinimumHeight(400)  # Bigger console
         self.output_text.setStyleSheet("""
             background-color: #010409;
             color: #7ee787;
             font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 12px;
+            font-size: 11px;
             border: 1px solid #30363d;
-            padding: 8px;
+            padding: 10px;
+            line-height: 1.4;
         """)
+        self.output_text.setPlaceholderText(
+            "Console output will appear here...\n\n"
+            "This will show:\n"
+            "• Current phase being executed\n"
+            "• Current step within each phase\n"
+            "• What actions are being performed\n"
+            "• Progress updates and findings\n"
+            "• Errors and warnings\n\n"
+            "Select phases above and click 'Start Pentest' to begin."
+        )
         output_layout.addWidget(self.output_text)
         
         layout.addWidget(output_group)
@@ -2308,6 +2335,342 @@ class MainWindow(QMainWindow):
         self.start_button.setEnabled(True)
         self.stop_button.setEnabled(False)
         self.progress_bar.hide()
+    
+    # Comprehensive Pentest Methods (New)
+    
+    def on_phase_checkbox_changed(self, phase_num: int, state: int):
+        """Handle phase checkbox changes with dependency validation"""
+        is_checked = (state == 2)  # Qt.Checked == 2
+        
+        if is_checked:
+            # If checking a phase, ensure all prerequisite phases are checked
+            for prerequisite in range(1, phase_num):
+                if prerequisite in self.phase_selection_checkboxes:
+                    if not self.phase_selection_checkboxes[prerequisite].isChecked():
+                        # Block this check and show warning
+                        self.phase_selection_checkboxes[phase_num].setChecked(False)
+                        QMessageBox.warning(
+                            self,
+                            "Phase Dependency",
+                            f"Cannot enable Phase {phase_num} without Phase {prerequisite}.\n\n"
+                            f"Phases must be run sequentially:\n"
+                            f"Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5"
+                        )
+                        return
+        else:
+            # If unchecking a phase, uncheck all subsequent phases
+            for subsequent in range(phase_num + 1, 6):
+                if subsequent in self.phase_selection_checkboxes:
+                    self.phase_selection_checkboxes[subsequent].setChecked(False)
+    
+    def quick_phase_select(self, phases: list):
+        """Quick select specific phases"""
+        # Uncheck all first
+        for phase_num in self.phase_selection_checkboxes:
+            self.phase_selection_checkboxes[phase_num].setChecked(False)
+        
+        # Check selected phases
+        for phase_num in phases:
+            if phase_num in self.phase_selection_checkboxes:
+                self.phase_selection_checkboxes[phase_num].setChecked(True)
+    
+    def get_enabled_phases(self) -> list:
+        """Get list of enabled phases"""
+        enabled = []
+        for phase_num, checkbox in sorted(self.phase_selection_checkboxes.items()):
+            if checkbox.isChecked():
+                enabled.append(phase_num)
+        return enabled
+    
+    def start_comprehensive_pentest(self):
+        """Start comprehensive multi-phase pentest"""
+        target = self.target_input.text().strip()
+        
+        if not target:
+            QMessageBox.warning(self, "Error", "Please enter a target URL or IP address")
+            return
+        
+        enabled_phases = self.get_enabled_phases()
+        
+        if not enabled_phases:
+            QMessageBox.warning(self, "Error", "Please select at least one phase to execute")
+            return
+        
+        # Validate phases are sequential
+        for i in range(len(enabled_phases) - 1):
+            if enabled_phases[i+1] != enabled_phases[i] + 1:
+                # Check if it's because we skipped some phases
+                for phase in range(enabled_phases[i] + 1, enabled_phases[i+1]):
+                    QMessageBox.warning(
+                        self,
+                        "Phase Sequence Error",
+                        f"Cannot skip Phase {phase}.\n\n"
+                        f"Phases must be sequential. Please enable all phases between "
+                        f"Phase {enabled_phases[i]} and Phase {enabled_phases[i+1]}."
+                    )
+                    return
+        
+        # Confirm
+        phase_names = [f"Phase {p}" for p in enabled_phases]
+        reply = QMessageBox.question(
+            self,
+            "Confirm Pentest",
+            f"Start penetration test against {target}?\n\n"
+            f"Enabled phases: {' → '.join(phase_names)}\n"
+            f"Max iterations per phase: {self.iterations_input.value()}\n\n"
+            f"⚠️ ENSURE YOU HAVE PROPER AUTHORIZATION!",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        
+        if reply == QMessageBox.No:
+            return
+        
+        # Import worker
+        from gui.comprehensive_worker import ComprehensiveWorker
+        
+        # Create worker
+        self.comprehensive_worker = ComprehensiveWorker(
+            target=target,
+            enabled_phases=enabled_phases,
+            iterations=self.iterations_input.value(),
+            config={}
+        )
+        
+        # Connect signals
+        self.comprehensive_worker.progress.connect(self.log_output)
+        self.comprehensive_worker.phase_started.connect(self.on_phase_started)
+        self.comprehensive_worker.phase_completed.connect(self.on_phase_completed)
+        self.comprehensive_worker.step_update.connect(self.on_step_update)
+        self.comprehensive_worker.finished.connect(self.comprehensive_pentest_finished)
+        self.comprehensive_worker.error.connect(self.comprehensive_pentest_error)
+        
+        # Start worker
+        self.comprehensive_worker.start()
+        
+        # Update UI
+        self.start_button.setEnabled(False)
+        self.stop_button.setEnabled(True)
+        self.progress_bar.setValue(0)
+        self.progress_bar.show()
+        self.output_text.clear()
+        
+        self.log_output("="*80)
+        self.log_output("🚀 COMPREHENSIVE PENTEST STARTED")
+        self.log_output("="*80)
+        self.log_output(f"Target: {target}")
+        self.log_output(f"Phases: {' → '.join(phase_names)}")
+        self.log_output(f"Iterations: {self.iterations_input.value()}")
+        self.log_output("="*80)
+    
+    def stop_comprehensive_pentest(self):
+        """Stop comprehensive pentest"""
+        if hasattr(self, 'comprehensive_worker') and self.comprehensive_worker.isRunning():
+            reply = QMessageBox.question(
+                self,
+                "Confirm Stop",
+                "Are you sure you want to stop the pentest?\n\n"
+                "Progress will be saved up to the current phase.",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            
+            if reply == QMessageBox.Yes:
+                self.comprehensive_worker.terminate()
+                self.log_output("\n" + "="*80)
+                self.log_output("⛔ Pentest stopped by user")
+                self.log_output("="*80)
+                self.reset_ui()
+    
+    def on_phase_started(self, phase_num: int, phase_name: str):
+        """Handle phase start"""
+        self.log_output(f"\n{'='*80}")
+        self.log_output(f"🔷 STARTING: {phase_name}")
+        self.log_output(f"{'='*80}")
+        
+        # Update progress bar
+        enabled_phases = self.get_enabled_phases()
+        if phase_num in enabled_phases:
+            progress = (enabled_phases.index(phase_num) / len(enabled_phases)) * 100
+            self.progress_bar.setValue(int(progress))
+    
+    def on_phase_completed(self, phase_num: int, results: dict):
+        """Handle phase completion"""
+        self.log_output(f"\n✅ Phase {phase_num} completed successfully!")
+        self.log_output(f"   Results saved to: ./phase_results/phase{phase_num}_*.json")
+        
+        # Update progress bar
+        enabled_phases = self.get_enabled_phases()
+        if phase_num in enabled_phases:
+            progress = ((enabled_phases.index(phase_num) + 1) / len(enabled_phases)) * 100
+            self.progress_bar.setValue(int(progress))
+    
+    def on_step_update(self, step_name: str, step_description: str):
+        """Handle step updates"""
+        self.log_output(f"   [{step_name}] {step_description}")
+    
+    def comprehensive_pentest_finished(self, results: dict):
+        """Handle comprehensive pentest completion"""
+        self.current_comprehensive_results = results
+        
+        self.log_output("\n" + "="*80)
+        self.log_output("✅ COMPREHENSIVE PENTEST COMPLETED")
+        self.log_output("="*80)
+        self.log_output(f"Session ID: {results.get('session_id', 'unknown')}")
+        self.log_output(f"Phases completed: {len(results.get('phase_results', {}))}")
+        self.log_output(f"Results saved to: ./phase_results/")
+        self.log_output("="*80)
+        
+        # Generate comprehensive report
+        self.generate_comprehensive_report(results)
+        
+        self.reset_ui()
+        self.export_button.setEnabled(True)
+        self.progress_bar.setValue(100)
+        
+        QMessageBox.information(
+            self,
+            "Pentest Complete",
+            f"Comprehensive pentest completed successfully!\n\n"
+            f"Session ID: {results.get('session_id', 'unknown')}\n"
+            f"Phases completed: {len(results.get('phase_results', {}))}\n\n"
+            f"Reports saved to: ./reports/\n"
+            f"Phase results saved to: ./phase_results/"
+        )
+    
+    def comprehensive_pentest_error(self, error_msg: str):
+        """Handle comprehensive pentest error"""
+        self.log_output(f"\n{'='*80}")
+        self.log_output(f"❌ ERROR: {error_msg}")
+        self.log_output(f"{'='*80}")
+        
+        self.reset_ui()
+        
+        QMessageBox.critical(
+            self,
+            "Pentest Error",
+            f"An error occurred during the pentest:\n\n{error_msg}\n\n"
+            f"Check the console output for details.\n"
+            f"Partial results may have been saved to ./phase_results/"
+        )
+    
+    def generate_comprehensive_report(self, results: dict):
+        """Generate comprehensive report from all phases"""
+        try:
+            from reports import ReportGenerator
+            from pathlib import Path
+            import json
+            
+            report_dir = Path("./reports")
+            report_dir.mkdir(exist_ok=True)
+            
+            session_id = results.get('session_id', 'unknown')
+            
+            # Generate JSON report
+            json_file = report_dir / f"comprehensive_report_{session_id}.json"
+            with open(json_file, 'w') as f:
+                json.dump(results, f, indent=2, default=str)
+            
+            self.log_output(f"📄 Comprehensive JSON report: {json_file}")
+            
+            # Generate HTML report with all phases
+            html_file = report_dir / f"comprehensive_report_{session_id}.html"
+            self.generate_html_report(results, html_file)
+            
+            self.log_output(f"📄 Comprehensive HTML report: {html_file}")
+            
+        except Exception as e:
+            logger.error(f"Failed to generate comprehensive report: {e}")
+            self.log_output(f"⚠️ Warning: Could not generate comprehensive report: {e}")
+    
+    def generate_html_report(self, results: dict, output_file: Path):
+        """Generate HTML report"""
+        try:
+            html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comprehensive Pentest Report - {results.get('session_id', 'unknown')}</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }}
+        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }}
+        h1 {{ color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }}
+        h2 {{ color: #34495e; margin-top: 30px; }}
+        .meta {{ background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }}
+        .phase {{ background: #fff; border-left: 4px solid #3498db; padding: 20px; margin: 20px 0; }}
+        .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }}
+        .stat-box {{ background: #3498db; color: white; padding: 15px; border-radius: 5px; text-align: center; }}
+        .stat-box h3 {{ margin: 0 0 10px 0; font-size: 14px; }}
+        .stat-box .value {{ font-size: 32px; font-weight: bold; }}
+        pre {{ background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow-x: auto; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Comprehensive Penetration Test Report</h1>
+        
+        <div class="meta">
+            <p><strong>Session ID:</strong> {results.get('session_id', 'N/A')}</p>
+            <p><strong>Target:</strong> {results.get('target', 'N/A')}</p>
+            <p><strong>Timestamp:</strong> {results.get('timestamp', 'N/A')}</p>
+            <p><strong>Phases Executed:</strong> {', '.join([f'Phase {p}' for p in results.get('enabled_phases', [])])}</p>
+        </div>
+        
+        <h2>📊 Executive Summary</h2>
+        <div class="stats">
+            <div class="stat-box">
+                <h3>Phases Completed</h3>
+                <div class="value">{len(results.get('phase_results', {}))}</div>
+            </div>
+        </div>
+        
+        <h2>🔍 Phase Results</h2>
+"""
+            
+            for phase_num in sorted(results.get('phase_results', {}).keys()):
+                phase_data = results['phase_results'][phase_num]
+                html_content += f"""
+        <div class="phase">
+            <h3>Phase {phase_num}</h3>
+            <pre>{json.dumps(phase_data, indent=2, default=str)}</pre>
+        </div>
+"""
+            
+            html_content += """
+    </div>
+</body>
+</html>
+"""
+            
+            with open(output_file, 'w') as f:
+                f.write(html_content)
+                
+        except Exception as e:
+            logger.error(f"Failed to generate HTML report: {e}")
+            raise
+    
+    def export_comprehensive_report(self):
+        """Export comprehensive report"""
+        if not hasattr(self, 'current_comprehensive_results'):
+            QMessageBox.warning(self, "No Results", "No results to export")
+            return
+        
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Comprehensive Report",
+            "",
+            "JSON Files (*.json);;HTML Files (*.html);;All Files (*)"
+        )
+        
+        if filename:
+            import json
+            from pathlib import Path
+            
+            if filename.endswith('.json'):
+                with open(filename, 'w') as f:
+                    json.dump(self.current_comprehensive_results, f, indent=2, default=str)
+            elif filename.endswith('.html'):
+                self.generate_html_report(self.current_comprehensive_results, Path(filename))
+            
+            QMessageBox.information(self, "Success", f"Report exported to:\n{filename}")
     
     # New helper methods for Phase 8 features
     

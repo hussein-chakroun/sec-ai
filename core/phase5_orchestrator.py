@@ -26,7 +26,7 @@ from lateral_movement.rdp_hijacking import RDPHijacking
 from lateral_movement.database_hopping import DatabaseHopping
 from active_directory.kerberos_attacks import KerberosAttacks
 from active_directory.bloodhound_analyzer import BloodHoundAnalyzer
-from active_directory.dcsync import DCSync
+from active_directory.dcsync import DCSyncAttack
 from active_directory.ntlm_relay import NTLMRelay
 
 
@@ -56,8 +56,8 @@ class LateralMovementAttempt:
     source_host: str
     target_host: str
     technique: str  # pass_the_hash, pass_the_ticket, ssh_key, rdp, etc.
-    credentials_used: Optional[str] = None
     tool: str
+    credentials_used: Optional[str] = None
     success: bool = False
     access_gained: str = "none"  # none, user, admin, system
     evidence: List[str] = field(default_factory=list)
@@ -628,7 +628,7 @@ Your goal is to create the most effective lateral movement plan to achieve compl
                 elif attack_type == 'dcsync':
                     # DCSync attack (requires DA or replication rights)
                     if self.progress.domain_controllers_compromised > 0:
-                        dcsync = DCSync(self.domain_name)
+                        dcsync = DCSyncAttack(self.domain_name)
                         domain_hashes = await dcsync.dump_domain_hashes()
                         results.append({
                             'attack': 'dcsync',

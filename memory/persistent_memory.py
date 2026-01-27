@@ -26,7 +26,7 @@ class Engagement(Base):
     vulnerabilities_found = Column(JSON)
     successful_techniques = Column(JSON)
     failed_techniques = Column(JSON)
-    metadata = Column(JSON)
+    meta_data = Column(JSON)
 
 
 class Technique(Base):
@@ -41,7 +41,7 @@ class Technique(Base):
     success = Column(Integer)  # 1=success, 0=fail
     timestamp = Column(DateTime, default=datetime.now)
     execution_time = Column(Float)
-    metadata = Column(JSON)
+    meta_data = Column(JSON)
 
 
 class TargetProfile(Base):
@@ -56,7 +56,7 @@ class TargetProfile(Base):
     defensive_mechanisms = Column(JSON)
     common_vulnerabilities = Column(JSON)
     last_updated = Column(DateTime, default=datetime.now)
-    metadata = Column(JSON)
+    meta_data = Column(JSON)
 
 
 class LearningEvent(Base):
@@ -99,7 +99,7 @@ class PersistentMemory:
             vulnerabilities_found=engagement_data.get('vulnerabilities', []),
             successful_techniques=engagement_data.get('successful_techniques', []),
             failed_techniques=engagement_data.get('failed_techniques', []),
-            metadata=engagement_data.get('metadata', {})
+            meta_data=engagement_data.get('metadata', {})
         )
         
         self.session.merge(engagement)
@@ -119,7 +119,7 @@ class PersistentMemory:
             parameters=parameters,
             success=1 if success else 0,
             execution_time=execution_time,
-            metadata=metadata or {}
+            meta_data=metadata or {}
         )
         
         self.session.add(record)
@@ -180,7 +180,7 @@ class PersistentMemory:
             defensive_mechanisms=profile_data.get('defensive_mechanisms', []),
             common_vulnerabilities=profile_data.get('common_vulnerabilities', []),
             last_updated=datetime.now(),
-            metadata=profile_data.get('metadata', {})
+            meta_data=profile_data.get('metadata', {})
         )
         
         self.session.merge(profile)

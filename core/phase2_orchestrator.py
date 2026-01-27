@@ -569,6 +569,41 @@ class Phase2Orchestrator:
                 lambda: self._sqlmap.scan(
                     task.target,
                     {'batch': True, 'level': 1, 'risk': 1, 'crawl': task.params.get('crawl_depth', 1)}
+                )
+            )
+            
+            # Process SQL injection findings
+            vulnerabilities = []
+            if result.get('vulnerable'):
+                vulnerabilities.append({
+                    'title': 'SQL Injection Vulnerability',
+                    'severity': 'critical',
+                    'cvss_score': 9.8,
+                    'description': f'SQL injection found in {task.target}. '
+                                 f'Injection types: {", ".join(result.get("injection_type", []))}',
+                    'affected_target': task.target,
+                    'affected_service': 'web',
+                    'exploit_available': True,
+                    'tool_source': 'sqlmap',
+                    'confidence': 1.0,
+                    'evidence': result.get('payloads', [])[:5],
+                    'remediation': 'Use parameterized queries/prepared statements. Implement input validation and WAF.'
+                })
+            
+            return {
+                'tool': 'sqlmap',
+                'target': task.target,
+                'vulnerabilities': vulnerabilities,
+                'raw_result': result,
+                'status': 'completed'
+            }
+            
+        except Exception as e:
+            logger.error(f"SQLMap error: {e}")
+            return {'tool': 'sqlmap', 'target': task.target, 'vulnerabilities': [], 'error': str(e), 'status': 'failed'}
+    
+    async def _run_nikto(self, task: ScanTask) -> Dict[str, Any]:
+        """Run Nikto web server scanner"""
         if not self._nikto:
             return {'tool': 'nikto', 'target': task.target, 'vulnerabilities': [], 'status': 'skipped'}
         
@@ -595,28 +630,10 @@ class Phase2Orchestrator:
             
         except Exception as e:
             logger.error(f"Nikto error: {e}")
-            return {'tool': 'nikto', 'target': task.target, 'vulnerabilities': [], 'error': str(e), 'status': 'failed'            'title': 'SQL Injection Vulnerability',
-                    'severity': 'critical',
-                    'cvss_score': 9.8,
-                    'description': f'SQL injection found in {task.target}. '
-                                 f'Injection types: {", ".join(result.get("injection_type", []))}',
-                    'affected_target': task.target,
-                    'affected_service': 'web',
-                    'exploit_available': True,
-                    'tool_source': 'sqlmap',
-                    'confidence': 1.0,
-                    'evidence': result.get('payloads', [])[:5],
-                    'remediation': 'Use parameterized queries/prepared statements. Implement input validation and WAF.'
-                })
-            
-            return {
-                'tool': 'sqlmap',
-                'target': task.target,
-                'vulnerabilities': vulnerabilities,
-                'raw_result': result,
-                'status': 'completed'
-            }
-            
+            return {'tool': 'nikto', 'target': task.target, 'vulnerabilities': [], 'error': str(e), 'status': 'failed'}
+    
+    async def _run_xss_scanner(self, task: ScanTask) -> Dict[str, Any]:
+        """Run XSS vulnerability scanner"""
         if not self._xss_scanner:
             return {'tool': 'xss_scanner', 'target': task.target, 'vulnerabilities': [], 'status': 'skipped'}
         
@@ -639,15 +656,11 @@ class Phase2Orchestrator:
             
         except Exception as e:
             logger.error(f"XSS scanner error: {e}")
-            return {'tool': 'xss_scanner', 'target': task.target, 'vulnerabilities': [], 'error': str(e), 'status': 'failed'
-        return {
-            'tool': 'nikto',
-            'target': task.target,
-            'vulnerabilities': [],
-            'status': 'completed'
-        }
+            return {'tool': 'xss_scanner', 'target': task.target, 'vulnerabilities': [], 'error': str(e), 'status': 'failed'}
     
-    asynif not self._cve_matcher:
+    async def _run_cve_matcher(self, task: ScanTask) -> Dict[str, Any]:
+        """Run CVE correlation against service versions"""
+        if not self._cve_matcher:
             return {'tool': 'cve_matcher', 'target': task.target, 'vulnerabilities': [], 'status': 'skipped'}
         
         logger.info(f"Running CVE matcher for {task.target}")
@@ -674,40 +687,12 @@ class Phase2Orchestrator:
                 'target': task.target,
                 'vulnerabilities': vulnerabilities,
                 'raw_result': result,
-        if not self._ssl_tester:
-            return {'tool': 'ssl_tester', 'target': task.target, 'vulnerabilities': [], 'status': 'skipped'}
-        
-        logger.info(f"Running SSL/TLS test on {task.target}")
-        
-        try:
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None,
-                lambda: self._ssl_tester.test_url(task.target)
-            )
-            
-            return {
-                'tool': 'ssl_tester',
-                'target': task.target,
-                'vulnerabilities': result.get('vulnerabilities', []),
-                'raw_result': result,
                 'status': 'completed'
             }
             
         except Exception as e:
-            logger.error(f"SSL tester error: {e}")
-            return {'tool': 'ssl_tester', 'target': task.target, 'vulnerabilities': [], 'error': str(e), 'status': 'failed'c def _run_cve_matcher(self, task: ScanTask) -> Dict[str, Any]:
-        """Run CVE correlation against service versions"""
-        logger.info(f"Running CVE matcher for {task.target}")
-        await asyncio.sleep(0.2)
-        
-        # This will use the CVE correlation engine (to be implemented)
-        return {
-            'tool': 'cve_matcher',
-            'target': task.target,
-            'vulnerabilities': [],
-            'status': 'completed'
-        }
+            logger.error(f"CVE matcher error: {e}")
+            return {'tool': 'cve_matcher', 'target': task.target, 'vulnerabilities': [], 'error': str(e), 'status': 'failed'}
     
     async def _run_ssl_tester(self, task: ScanTask) -> Dict[str, Any]:
         """Run SSL/TLS security tester"""
